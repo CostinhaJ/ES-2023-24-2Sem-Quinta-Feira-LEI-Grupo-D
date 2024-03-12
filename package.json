@@ -1,0 +1,11 @@
+{
+  "name": "ESGestaoSalas",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/CostinhaJ/ESGestaoSalas.git",
+  "author": "mrffc-iscteiul <mrffc@iscte-iul.pt>",
+  "license": "MIT",
+  "dependencies": {
+    "tabulator-tables": "^5.6.1"
+  }
+}
