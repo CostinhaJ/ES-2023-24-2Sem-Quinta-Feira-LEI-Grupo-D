@@ -1,6 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('custom-file-upload').addEventListener('click', function() {
+        const isUrl = confirm("Deseja carregar a partir de um URL? \nSe sim, clique Ok. Se não, clique em Cancelar")
+        if(isUrl){
+            const url = prompt("URL do arquivo CSV:")
+            if(url){
+            handleFileSelect(url);
+            }
+        }else{
         document.getElementById('csv-file').click();
+        }
     });
 
     document.getElementById('csv-file').addEventListener('change', handleFileSelect, false);
@@ -30,17 +38,35 @@ let filterMode = "AND"; // Modo de filtro padrão
 //     });
 // }
 
-function handleFileSelect(event) {
-    const file = event.target.files[0];
-    Papa.parse(file, {
+
+function handleFileSelect(fileOrUrl) {
+    if(typeof fileOrUrl === 'string'){
+    Papa.parse(fileOrUrl, {
+        download: true,
         header: true,
-        delimiter: ";",
-        complete: function(results) {
+        complete: function(results){
             const dataWithWeeks = addWeeksToData(results.data);
             initializeTable(dataWithWeeks);
+        },
+        error: function(error) {
+            console.error("Error fetching CSV file:", error);
+            alert("Erro ao carregar arquivo CSV. Verifique se o URL está correto e tente novamente")
         }
     });
+}else{
+    const file= fileOrUrl.target.files[0];
+        Papa.parse(file, {
+            header: true,
+            delimiter: ";",
+            complete: function(results) {
+                const dataWithWeeks = addWeeksToData(results.data);
+                initializeTable(dataWithWeeks)
+            }
+        });
+    }
 }
+
+
 
 function convertToDate(str) {
     if (!str) {
