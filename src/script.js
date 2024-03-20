@@ -1,52 +1,67 @@
  import * as Papa from 'papaparse';
  import {TabulatorFull as Tabulator} from 'tabulator-tables';
 
+// @ts-check
+/**
+ * @fileoverview Handles CSV file parsing, data manipulation, and table initialization.
+ * @module csvHandler
+ */
 
+/**
+ * Event listener for DOMContentLoaded event.
+ * Adds event listeners for file upload, filter buttons, and apply filters button.
+ */
 document.addEventListener('DOMContentLoaded', () => {
+    // Add event listener for custom file upload button
     document.getElementById('custom-file-upload').addEventListener('click', function() {
         const isUrl = confirm("Deseja carregar a partir de um URL? \nSe sim, clique Ok. Se não, clique em Cancelar")
         if(isUrl){
             const url = prompt("URL do arquivo CSV:")
             if(url){
-            handleFileSelect(url);
+                handleFileSelect(url);
             }
-        }else{
-        document.getElementById('csv-file').click();
+        } else {
+            document.getElementById('csv-file').click();
         }
     });
 
+    // Add event listener for CSV file input change
     document.getElementById('csv-file').addEventListener('change', handleFileSelect, false);
 
-    // Adiciona os event listeners para os botões AND e OR
+    // Add event listeners for filter buttons
     document.getElementById('filter-and').addEventListener('click', () => setFilterMode('AND'));
     document.getElementById('filter-or').addEventListener('click', () => setFilterMode('OR'));
 
-    // Ouvinte para o botão de aplicar filtros
+    // Add event listener for apply filters button
     document.getElementById('apply-filters').addEventListener('click', applyCustomFilters);
 });
 
 
-// let globalData = []; // Para armazenar os dados globalmente após o parsing
 let filterMode = "AND"; // Modo de filtro padrão
 
-
-
+/**
+ * Handles file selection event.
+ * Parses the CSV file and initializes the table.
+ * @param {string | Event} fileOrUrl - File or URL of the CSV file, or event object.
+ */
 function handleFileSelect(fileOrUrl) {
     if(typeof fileOrUrl === 'string'){
-    Papa.parse(fileOrUrl, {
-        download: true,
-        header: true,
-        complete: function(results){
-            const dataWithWeeks = addWeeksToData(results.data);
-            initializeTable(dataWithWeeks);
-        },
-        error: function(error) {
-            console.error("Error fetching CSV file:", error);
-            alert("Erro ao carregar arquivo CSV. Verifique se o URL está correto e tente novamente")
-        }
-    });
-}else{
-    const file= fileOrUrl.target.files[0];
+        // Parse CSV from URL
+        Papa.parse(fileOrUrl, {
+            download: true,
+            header: true,
+            complete: function(results){
+                const dataWithWeeks = addWeeksToData(results.data);
+                initializeTable(dataWithWeeks);
+            },
+            error: function(error) {
+                console.error("Error fetching CSV file:", error);
+                alert("Erro ao carregar arquivo CSV. Verifique se o URL está correto e tente novamente")
+            }
+        });
+    } else {
+        // Parse CSV from file input
+        const file= fileOrUrl.target.files[0];
         Papa.parse(file, {
             header: true,
             delimiter: ";",
@@ -58,33 +73,39 @@ function handleFileSelect(fileOrUrl) {
     }
 }
 
-
-
+/**
+ * Converts a date string to a Date object.
+ * @param {string} str - Date string in the format 'dd/mm/yyyy'.
+ * @returns {Date | null} Date object if valid, null otherwise.
+ */
 function convertToDate(str) {
     if (!str) {
         console.log("Data inválida fornecida para convertToDate:", str);
-        return null; // ou uma data padrão, se preferir
+        return null; // or a default date if preferred
     }
     const parts = str.split('/');
     const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1; // -1 porque os meses em JavaScript começam em 0
+    const month = parseInt(parts[1], 10) - 1; // -1 because months in JavaScript start from 0
     const year = parseInt(parts[2], 10);
     return new Date(year, month, day);
 }
 
-
-
+/**
+ * Adds week information to each data row.
+ * @param {Object[]} data - Array of data rows.
+ * @returns {Object[]} Array of data rows with added week information.
+ */
 function addWeeksToData(data) {
     return data.map(row => {
         if (!row['Data da aula']) {
             console.log("Data da aula ausente para a linha:", row);
-            return row; // Ou adicione algum tratamento padrão para datas ausentes
+            return row; // Or add some default handling for missing dates
         }
 
         const date = convertToDate(row['Data da aula']);
         if (isNaN(date.getTime())) {
             console.log("Data da aula inválida para a linha:", row);
-            return row; // Ou adicione algum tratamento padrão para datas inválidas
+            return row; // Or add some default handling for invalid dates
         }
 
         const weekOfYear = getWeekNumber(date);
@@ -94,10 +115,11 @@ function addWeeksToData(data) {
     });
 }
 
-
-
-
-// Função para calcular o número da semana no ano
+/**
+ * Calculates the week number of a given date.
+ * @param {Date} d - Date object.
+ * @returns {number} Week number.
+ */
 function getWeekNumber(d) {
     d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
     d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
@@ -106,24 +128,28 @@ function getWeekNumber(d) {
     return weekNo;
 }
 
-// Função para calcular o número da semana no semestre
+/**
+ * Calculates the week number of the semester.
+ * @param {number} weekOfYear - Week number of the year.
+ * @returns {number | string} Week number of the semester or 'Fora do semestre' (out of semester).
+ */
 function getSemesterWeekNumber(weekOfYear) {
     if (weekOfYear >= 5 && weekOfYear <= 19) {
-        // Primeiro Semestre
-        return weekOfYear - 4; // Ajuste para começar a semana do semestre de 1
+        // First Semester
+        return weekOfYear - 4; // Adjustment to start semester week from 1
     } else if (weekOfYear >= 35 && weekOfYear <= 49) {
-        // Segundo Semestre
-        return weekOfYear - 34; // Ajuste para começar a semana do semestre de 1
+        // Second Semester
+        return weekOfYear - 34; // Adjustment to start semester week from 1
     } else {
-        // Fora do Semestre
+        // Out of Semester
         return 'Fora do semestre';
     }
 }
 
-
-
-let myTable; // Variável global para armazenar a instância da tabela
-
+/**
+ * Initializes the Tabulator table with the provided data.
+ * @param {Object[]} data - Array of data rows.
+ */
 function initializeTable(data) {
     myTable = new Tabulator("#example-table", {
         data: data,
@@ -148,8 +174,11 @@ function initializeTable(data) {
     });
 }
 
+/**
+ * Applies custom filters to the table based on the selected filter mode.
+ */
 function applyCustomFilters() {
-    const filters = myTable.getHeaderFilters(); // Usa diretamente a variável global
+    const filters = myTable.getHeaderFilters(); // Uses the global variable directly
     
     console.log("Modo de filtro atual:", filterMode);
     console.log("Filtros a serem aplicados:", filters);
@@ -170,14 +199,17 @@ function applyCustomFilters() {
     }
 }
 
-// Função para alternar entre os modos de filtragem
+/**
+ * Sets the filter mode to either 'AND' or 'OR'.
+ * @param {string} mode - Filter mode ('AND' or 'OR').
+ */
 function setFilterMode(mode) {
-    filterMode = mode; // mode deve ser "AND" ou "OR"
+    filterMode = mode; // mode should be 'AND' or 'OR'
     console.log("Modo de filtro alterado para:", filterMode);
 }
 
-
-
+/** @type {Tabulator} */
+let myTable; // Global variable to store the table instance
 
 
 //Para os testes
