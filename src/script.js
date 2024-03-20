@@ -21,18 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // let globalData = []; // Para armazenar os dados globalmente após o parsing
 let filterMode = "AND"; // Modo de filtro padrão
 
-// function handleFileSelect(event) {
-//     const file = event.target.files[0];
-//     Papa.parse(file, {
-//         header: true,
-//         delimiter: ";",
-//         complete: function(results) {
-//             console.log("Parsing completo:", results);
-//             globalData = results.data;
-//             initializeTable(globalData);
-//         }
-//     });
-// }
 
 function handleFileSelect(event) {
     const file = event.target.files[0];
@@ -161,3 +149,10 @@ function setFilterMode(mode) {
     filterMode = mode; // mode deve ser "AND" ou "OR"
     console.log("Modo de filtro alterado para:", filterMode);
 }
+
+
+
+
+
+//Para os testes
+module.exports = { addWeeksToData, convertToDate, handleFileSelect,getWeekNumber,getSemesterWeekNumber, applyCustomFilters , setFilterMode, filterMode};

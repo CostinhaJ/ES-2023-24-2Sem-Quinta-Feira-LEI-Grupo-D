@@ -1,0 +1,15 @@
+{
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module" 
+      },
+      "env": {
+        "es6": true
+      },
+    
+    "plugins": ["complexity"],
+    "rules": {
+      "complexity": ["error", 1] // Defenir complexidade
+    }
+  }
+  
