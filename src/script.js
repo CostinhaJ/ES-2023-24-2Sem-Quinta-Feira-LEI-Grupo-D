@@ -8,6 +8,14 @@
  * @module csvHandler
  */
 
+let filterMode = "AND"; // Modo de filtro padrão
+
+/** @type {Tabulator} */
+let myTable; // Global variable to store the table instance
+
+let horario;
+let salas;
+
 /**
  * Event listener for DOMContentLoaded event.
  * Adds event listeners for file upload, filter buttons, and apply filters button.
@@ -28,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add event listener for CSV file input change
     document.getElementById('csv-file').addEventListener('change', handleFileSelect, false);
+    document.getElementById('classroom-file').addEventListener('change', handleClassroomFile, false);
 
     // Add event listeners for filter buttons
     document.getElementById('filter-and').addEventListener('click', () => setFilterMode('AND'));
@@ -37,8 +46,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('apply-filters').addEventListener('click', applyCustomFilters);
 });
 
+function handleClassroomFile(file){
+    Papa.parse(file.target.files[0],{
+        header:true,
+        delimiter: ";",
+        complete:((results) => {salas=results.data;initializeTable2(salas);console.log(salas)})
+    })
+}
 
-let filterMode = "AND"; // Modo de filtro padrão
 
 /**
  * Handles file selection event.
@@ -52,8 +67,8 @@ function handleFileSelect(fileOrUrl) {
             download: true,
             header: true,
             complete: function(results){
-                const dataWithWeeks = addWeeksToData(results.data);
-                initializeTable(dataWithWeeks);
+                horario = DateConverter.addWeeksToData(results.data);
+                initializeTable(horario)
             },
             error: function(error) {
                 console.error("Error fetching CSV file:", error);
@@ -67,14 +82,58 @@ function handleFileSelect(fileOrUrl) {
             header: true,
             delimiter: ";",
             complete: function(results) {
-                const dataWithWeeks = DateConverter.addWeeksToData(results.data);
-                initializeTable(dataWithWeeks)
+                horario = DateConverter.addWeeksToData(results.data);
+                initializeTable(horario)
             }
         });
     }
 }
 
-
+function initializeTable2(data){
+    myTable = new Tabulator("#example-table2",{
+        data:data,
+        columns:[
+            {title: "Edif�cio", field: "Edif�cio", headerFilter: "input"},
+            {title: "Nome sala", field: "Nome sala", headerFilter: "input"},
+            {title: "Capacidade Normal", field: "Capacidade Normal", headerFilter: "input"},
+            {title: "Capacidade Exame", field: "Capacidade Exame", headerFilter: "input"},
+            {title: "N� caracter�sticas", field: "N� caracter�sticas", headerFilter: "input"},
+            {title: "Anfiteatro aulas", field: "Anfiteatro aulas", headerFilter: "input"},
+            {title: "Apoio t�cnico eventos", field: "Apoio t�cnico eventos", headerFilter: "input"},
+            {title: "Arq 1", field: "Arq 1", headerFilter: "input"},
+            {title: "Arq 2", field: "Arq 2", headerFilter: "input"},
+            {title: "Arq 3", field: "Arq 3", headerFilter: "input"},
+            {title: "Arq 4", field: "Arq 4", headerFilter: "input"},
+            {title: "Arq 5", field: "Arq 5", headerFilter: "input"},
+            {title: "Arq 6", field: "Arq 6", headerFilter: "input"},
+            {title: "Arq 9", field: "Arq 9", headerFilter: "input"},
+            {title: "BYOD (Bring Your Own Device)", field: "BYOD (Bring Your Own Device)", headerFilter: "input"},
+            {title: "Focus Group", field: "Focus Group", headerFilter: "input"},
+            {title: "Hor�rio sala vis�vel portal p�blico", field: "Hor�rio sala vis�vel portal p�blico", headerFilter: "input"},
+            {title: "Laborat�rio de Arquitectura de Computadores I", field: "Laborat�rio de Arquitectura de Computadores I", headerFilter: "input"},
+            {title: "Laborat�rio de Arquitectura de Computadores II", field: "Laborat�rio de Arquitectura de Computadores II", headerFilter: "input"},
+            {title: "Laborat�rio de Bases de Engenharia", field: "Laborat�rio de Bases de Engenharia", headerFilter: "input"},
+            {title: "Laborat�rio de Electr�nica", field: "Laborat�rio de Electr�nica", headerFilter: "input"},
+            {title: "Laborat�rio de Inform�tica", field: "Laborat�rio de Inform�tica", headerFilter: "input"},
+            {title: "Laborat�rio de Jornalismo", field: "Laborat�rio de Jornalismo", headerFilter: "input"},
+            {title: "Laborat�rio de Redes de Computadores I", field: "Laborat�rio de Redes de Computadores I", headerFilter: "input"},
+            {title: "Laborat�rio de Redes de Computadores II", field: "Laborat�rio de Redes de Computadores II", headerFilter: "input"},
+            {title: "Laborat�rio de Telecomunica��es", field: "Laborat�rio de Telecomunica��es", headerFilter: "input"},
+            {title: "Sala Aulas Mestrado", field: "Sala Aulas Mestrado", headerFilter: "input"},
+            {title: "Sala Aulas Mestrado Plus", field: "Sala Aulas Mestrado Plus", headerFilter: "input"},
+            {title: "Sala NEE", field: "Sala NEE", headerFilter: "input"},
+            {title: "Sala Provas", field: "Sala Provas", headerFilter: "input"},
+            {title: "Sala Reuni�o", field: "Sala Reuni�o", headerFilter: "input"},
+            {title: "Sala de Arquitectura", field: "Sala de Arquitectura", headerFilter: "input"},
+            {title: "Sala de Aulas normal", field: "Sala de Aulas normal", headerFilter: "input"},
+            {title: "videoconfer�ncia", field: "videoconfer�ncia", headerFilter: "input"},
+            {title: "�trio", field: "�trio", headerFilter: "input"},
+        ],
+        layout: "fitColumns",
+        pagination: "local",
+        paginationSize: 10,
+    })
+}
 
 /**
  * Initializes the Tabulator table with the provided data.
@@ -138,9 +197,5 @@ function setFilterMode(mode) {
     console.log("Modo de filtro alterado para:", filterMode);
 }
 
-/** @type {Tabulator} */
-let myTable; // Global variable to store the table instance
-
-
 //Para os testes
-module.exports = { addWeeksToData, convertToDate, handleFileSelect,getWeekNumber,getSemesterWeekNumber, applyCustomFilters , setFilterMode, filterMode};
+module.exports = { handleFileSelect, applyCustomFilters , setFilterMode, filterMode};

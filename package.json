@@ -6,7 +6,9 @@
   "scripts": {
     "lint": "eslint src/script.js",
     "test": "jest --coverage",
-    "doc": "jsdoc -c jsdoc.json"
+    "doc": "jsdoc -c jsdoc.json",
+    "prerun": "npx webpack",
+    "run": "npm start"
   },
   "author": "",
   "license": "ISC",
