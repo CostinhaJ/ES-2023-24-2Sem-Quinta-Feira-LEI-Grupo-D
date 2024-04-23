@@ -48,6 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add event listener for apply filters button
     document.getElementById('apply-filters').addEventListener('click', applyCustomFilters);
+
+    //Add event listener for export csv or json
+    document.getElementById('export-json').addEventListener('click', exportToJSON);
+    document.getElementById('export-csv').addEventListener('click', exportToCSV);
+
 });
 
 function handleClassroomFile(file){
@@ -202,6 +207,36 @@ function setFilterMode(mode) {
     filterMode = mode; // mode should be 'AND' or 'OR'
     console.log("Modo de filtro alterado para:", filterMode);
 }
+
+myTable.on("cellEdited", function(cell){
+    console.log("The cell was edited", cell);
+    myTable.updateData([{id: cell.getRow().getIndex(), [cell.getField()]: cell.getValue()}]);
+});
+
+function exportToJSON(){
+    let data = myTable.getData();
+    let dataStr = JSON.stringify(data);
+    downloadData(dataStr, "application/json", "horario.json");
+}
+
+function exportToCSV(){
+    myTable.download("csv", "dados.csv");
+}
+
+function downloadData(dataStr, mimeType, fileName){
+    let blob = new Blob([dataStr], {type: mimeType});
+    let url = window.URL.createObjectURL(blob);
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=> {
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    }, 0);
+}
+
 
 //Para os testes
 module.exports = { handleFileSelect, applyCustomFilters , setFilterMode, filterMode};
