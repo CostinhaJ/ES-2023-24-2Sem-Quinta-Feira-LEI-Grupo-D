@@ -34,6 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    document.getElementById('custom-room-upload').addEventListener('click', function() {
+        document.getElementById('classroom-file').click();
+    });
+
     // Add event listener for CSV file input change
     document.getElementById('csv-file').addEventListener('change', handleFileSelect, false);
     document.getElementById('classroom-file').addEventListener('change', handleClassroomFile, false);
@@ -47,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function handleClassroomFile(file){
+
     Papa.parse(file.target.files[0],{
         header:true,
         delimiter: ";",
@@ -93,13 +98,13 @@ function initializeTable2(data){
     myTable = new Tabulator("#example-table2",{
         data:data,
         columns:[
-            {title: "Edif�cio", field: "Edif�cio", headerFilter: "input"},
+            {title: "Edificio", field: "Edif�cio", headerFilter: "input"},
             {title: "Nome sala", field: "Nome sala", headerFilter: "input"},
             {title: "Capacidade Normal", field: "Capacidade Normal", headerFilter: "input"},
             {title: "Capacidade Exame", field: "Capacidade Exame", headerFilter: "input"},
-            {title: "N� caracter�sticas", field: "N� caracter�sticas", headerFilter: "input"},
+            {title: "No caracteristicas", field: "N� caracter�sticas", headerFilter: "input"},
             {title: "Anfiteatro aulas", field: "Anfiteatro aulas", headerFilter: "input"},
-            {title: "Apoio t�cnico eventos", field: "Apoio t�cnico eventos", headerFilter: "input"},
+            {title: "Apoio tecnico eventos", field: "Apoio t�cnico eventos", headerFilter: "input"},
             {title: "Arq 1", field: "Arq 1", headerFilter: "input"},
             {title: "Arq 2", field: "Arq 2", headerFilter: "input"},
             {title: "Arq 3", field: "Arq 3", headerFilter: "input"},
@@ -109,13 +114,13 @@ function initializeTable2(data){
             {title: "Arq 9", field: "Arq 9", headerFilter: "input"},
             {title: "BYOD (Bring Your Own Device)", field: "BYOD (Bring Your Own Device)", headerFilter: "input"},
             {title: "Focus Group", field: "Focus Group", headerFilter: "input"},
-            {title: "Hor�rio sala vis�vel portal p�blico", field: "Hor�rio sala vis�vel portal p�blico", headerFilter: "input"},
-            {title: "Laborat�rio de Arquitectura de Computadores I", field: "Laborat�rio de Arquitectura de Computadores I", headerFilter: "input"},
-            {title: "Laborat�rio de Arquitectura de Computadores II", field: "Laborat�rio de Arquitectura de Computadores II", headerFilter: "input"},
-            {title: "Laborat�rio de Bases de Engenharia", field: "Laborat�rio de Bases de Engenharia", headerFilter: "input"},
-            {title: "Laborat�rio de Electr�nica", field: "Laborat�rio de Electr�nica", headerFilter: "input"},
-            {title: "Laborat�rio de Inform�tica", field: "Laborat�rio de Inform�tica", headerFilter: "input"},
-            {title: "Laborat�rio de Jornalismo", field: "Laborat�rio de Jornalismo", headerFilter: "input"},
+            {title: "Horario sala vis�vel portal p�blico", field: "Hor�rio sala vis�vel portal p�blico", headerFilter: "input"},
+            {title: "Laboratorio de Arquitectura de Computadores I", field: "Laborat�rio de Arquitectura de Computadores I", headerFilter: "input"},
+            {title: "Laboratorio de Arquitectura de Computadores II", field: "Laborat�rio de Arquitectura de Computadores II", headerFilter: "input"},
+            {title: "Laboratorio de Bases de Engenharia", field: "Laborat�rio de Bases de Engenharia", headerFilter: "input"},
+            {title: "Laboratorio de Electr�nica", field: "Laborat�rio de Electr�nica", headerFilter: "input"},
+            {title: "Laboratorio de Inform�tica", field: "Laborat�rio de Inform�tica", headerFilter: "input"},
+            {title: "Laboratorio de Jornalismo", field: "Laborat�rio de Jornalismo", headerFilter: "input"},
             {title: "Laborat�rio de Redes de Computadores I", field: "Laborat�rio de Redes de Computadores I", headerFilter: "input"},
             {title: "Laborat�rio de Redes de Computadores II", field: "Laborat�rio de Redes de Computadores II", headerFilter: "input"},
             {title: "Laborat�rio de Telecomunica��es", field: "Laborat�rio de Telecomunica��es", headerFilter: "input"},
@@ -127,11 +132,12 @@ function initializeTable2(data){
             {title: "Sala de Arquitectura", field: "Sala de Arquitectura", headerFilter: "input"},
             {title: "Sala de Aulas normal", field: "Sala de Aulas normal", headerFilter: "input"},
             {title: "videoconfer�ncia", field: "videoconfer�ncia", headerFilter: "input"},
-            {title: "�trio", field: "�trio", headerFilter: "input"},
+            {title: "Atrio", field: "Atrio", headerFilter: "input"},
         ],
         layout: "fitColumns",
         pagination: "local",
-        paginationSize: 10,
+        paginationSize: 50,
+
     })
 }
 
