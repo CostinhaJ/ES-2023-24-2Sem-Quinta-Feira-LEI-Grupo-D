@@ -201,6 +201,7 @@ function applyCustomFilters() {
 
 /**
  * Sets the filter mode to either 'AND' or 'OR'.
+ * 
  * @param {string} mode - Filter mode ('AND' or 'OR').
  */
 function setFilterMode(mode) {
@@ -208,21 +209,39 @@ function setFilterMode(mode) {
     console.log("Modo de filtro alterado para:", filterMode);
 }
 
+/**
+ * Handles the 'cellEdited' event of the table.
+ * 
+ * @param {Object} cell - The cell object that was edited.
+ */
 myTable.on("cellEdited", function(cell){
     console.log("The cell was edited", cell);
     myTable.updateData([{id: cell.getRow().getIndex(), [cell.getField()]: cell.getValue()}]);
 });
 
+/**
+ * Exports table data to JSON format.
+ */
 function exportToJSON(){
     let data = myTable.getData();
     let dataStr = JSON.stringify(data);
     downloadData(dataStr, "application/json", "horario.json");
 }
 
+/**
+ * Exports table data to CSV format.
+ */
 function exportToCSV(){
     myTable.download("csv", "dados.csv");
 }
 
+/**
+ * Downloads data as a file.
+ * 
+ * @param {string} dataStr - The data to be downloaded.
+ * @param {string} mimeType - The MIME type of the data.
+ * @param {string} fileName - The name of the file to be downloaded.
+ */
 function downloadData(dataStr, mimeType, fileName){
     let blob = new Blob([dataStr], {type: mimeType});
     let url = window.URL.createObjectURL(blob);
