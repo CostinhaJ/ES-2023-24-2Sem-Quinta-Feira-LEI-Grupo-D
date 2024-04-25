@@ -134,9 +134,9 @@ function initializeTable2(data){
             {title: "videoconfer�ncia", field: "videoconfer�ncia", headerFilter: "input"},
             {title: "Atrio", field: "Atrio", headerFilter: "input"},
         ],
-        layout: "fitColumns",
+        layout: "fitData",
         pagination: "local",
-        paginationSize: 50,
+        paginationSize: 15,
 
     })
 }
@@ -165,7 +165,7 @@ function initializeTable(data) {
         ],
         layout: "fitColumns",
         pagination: "local",
-        paginationSize: 50,
+        paginationSize: 15,
     });
 }
 
