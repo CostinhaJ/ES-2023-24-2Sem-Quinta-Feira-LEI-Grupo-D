@@ -57,14 +57,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
+/**
+ * Handles the file uploaded for classroom data.
+ * 
+ * @param {Object} file - The file object representing the uploaded file.
+ */
 function handleClassroomFile(file){
-
-    Papa.parse(file.target.files[0],{
-        header:true,
+    Papa.parse(file.target.files[0], {
+        header: true,
         delimiter: ";",
-        complete:((results) => {salas=results.data;initializeTable2(salas);console.log(salas)})
-    })
+        complete: (results) => {
+            salas = results.data;
+            initializeTable2(salas);
+            console.log(salas);
+        }
+    });
 }
+
 
 
 /**
@@ -101,6 +110,11 @@ function handleFileSelect(fileOrUrl) {
     }
 }
 
+/**
+ * Initializes a Tabulator table with provided data and settings.
+ * 
+ * @param {Array<Object>} data - The data to be displayed in the table.
+ */
 function initializeTable2(data){
     myTable = new Tabulator("#example-table2",{
         data:data,
