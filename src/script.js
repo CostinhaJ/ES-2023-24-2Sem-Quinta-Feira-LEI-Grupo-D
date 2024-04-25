@@ -216,10 +216,10 @@ function setFilterMode(mode) {
  * 
  * @param {Object} cell - The cell object that was edited.
  */
-myTable.on("cellEdited", function(cell){
-    console.log("The cell was edited", cell);
-    myTable.updateData([{id: cell.getRow().getIndex(), [cell.getField()]: cell.getValue()}]);
-});
+// myTable.on("cellEdited", function(cell){
+//     console.log("The cell was edited", cell);
+//     myTable.updateData([{id: cell.getRow().getIndex(), [cell.getField()]: cell.getValue()}]);
+// });
 
 /**
  * Exports table data to JSON format.
@@ -261,4 +261,4 @@ function downloadData(dataStr, mimeType, fileName){
 
 //Para os testes
 
-module.exports = {handleFileSelect, applyCustomFilters , setFilterMode , handleClassroomFile};
+module.exports = {handleFileSelect, setFilterMode , handleClassroomFile};

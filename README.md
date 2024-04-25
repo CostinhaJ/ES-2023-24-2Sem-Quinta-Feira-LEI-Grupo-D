@@ -17,6 +17,5 @@ npx webpack
 ## Executar testes
 
 npm test
-
-
-
+ 
+npm run lint
