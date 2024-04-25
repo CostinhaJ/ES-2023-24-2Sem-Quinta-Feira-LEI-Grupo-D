@@ -19,3 +19,7 @@ npx webpack
 npm test
  
 npm run lint
+
+## Criar docs
+
+jsdoc path/to/yourScript1.js path/to/yourScript2.js

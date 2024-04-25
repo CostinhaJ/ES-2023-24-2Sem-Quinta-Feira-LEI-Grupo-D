@@ -1,5 +1,5 @@
 
-const {handleFileSelect , setFilterMode, handleClassroomFile} = require('./script');
+const {handleFileSelect , setFilterMode, handleClassroomFile, downloadData} = require('./script');
 
 
 jest.mock('papaparse', () => ({ parse: jest.fn() }));
@@ -89,4 +89,30 @@ describe('setFilterMode', () => {
 
 
 
+document.createElement = jest.fn(() => ({
+    click: jest.fn(),
+    remove: jest.fn()
+}));
+document.body.appendChild = jest.fn();
 
+
+window.URL.createObjectURL = jest.fn(() => 'mocked_url');
+window.URL.revokeObjectURL = jest.fn();
+
+describe('downloadData', () => {
+    test('deve chamar createObjectURL, createElement, appendChild, click e revokeObjectURL corretamente', () => {
+       
+        downloadData('mocked_data_str', 'application/json', 'mocked_file_name.json');
+
+        expect(window.URL.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+
+       
+        expect(document.createElement).toHaveBeenCalledWith('a');
+
+        
+        expect(document.body.appendChild).toHaveBeenCalled();
+
+    
+        
+    });
+});
