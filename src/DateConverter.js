@@ -28,15 +28,15 @@ export default class DateConverter{
                 return row; // Or add some default handling for missing dates
             }
 
-            const date = this.convertToDate(row['Data da aula']);
+            const date = DateConverter.convertToDate(row['Data da aula']);
             if (isNaN(date.getTime())) {
                 console.log("Data da aula inválida para a linha:", row);
                 return row; // Or add some default handling for invalid dates
             }
 
-            const weekOfYear = this.getWeekNumber(date);
+            const weekOfYear = DateConverter.getWeekNumber(date);
             row['Semana do ano'] = weekOfYear;
-            row['Semana do semestre'] = this.getSemesterWeekNumber(weekOfYear);
+            row['Semana do semestre'] = DateConverter.getSemesterWeekNumber(weekOfYear);
             return row;
         });
     }
@@ -71,4 +71,9 @@ export default class DateConverter{
             return 'Fora do semestre';
         }
     }
+   
 }
+
+
+
+//module.exports= { addWeeksToData, convertToDate,getWeekNumber, getSemesterWeekNumber};
