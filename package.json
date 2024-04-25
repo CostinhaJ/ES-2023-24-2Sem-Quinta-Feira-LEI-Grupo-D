@@ -35,7 +35,8 @@
     },
     "collectCoverage": true,
     "collectCoverageFrom": [
-      "src/script.js"
+      "src/script.js",
+      "src/DateConverter.js"
     ],
     "coverageThreshold": {
       "global": {

@@ -1,7 +1,9 @@
  import * as Papa from 'papaparse';
- import {TabulatorFull as Tabulator} from 'tabulator-tables';
+ import {TabulatorFull as Tabulator, TabulatorFull} from 'tabulator-tables';
  import DateConverter from './DateConverter.js';
-
+ //const { addWeeksToData } = require('./DateConverter.js');
+ 
+  
 // @ts-check
 /**
  * @fileoverview Handles CSV file parsing, data manipulation, and table initialization.
@@ -258,4 +260,5 @@ function downloadData(dataStr, mimeType, fileName){
 
 
 //Para os testes
-module.exports = { handleFileSelect, applyCustomFilters , setFilterMode, filterMode};
+
+module.exports = {handleFileSelect, applyCustomFilters , setFilterMode , handleClassroomFile};
