@@ -48,6 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add event listener for apply filters button
     document.getElementById('apply-filters').addEventListener('click', applyCustomFilters);
+
+    //Add event listener for export csv or json
+    document.getElementById('export-json').addEventListener('click', exportToJSON);
+    document.getElementById('export-csv').addEventListener('click', exportToCSV);
+
 });
 
 function handleClassroomFile(file){
@@ -196,12 +201,61 @@ function applyCustomFilters() {
 
 /**
  * Sets the filter mode to either 'AND' or 'OR'.
+ * 
  * @param {string} mode - Filter mode ('AND' or 'OR').
  */
 function setFilterMode(mode) {
     filterMode = mode; // mode should be 'AND' or 'OR'
     console.log("Modo de filtro alterado para:", filterMode);
 }
+
+/**
+ * Handles the 'cellEdited' event of the table.
+ * 
+ * @param {Object} cell - The cell object that was edited.
+ */
+myTable.on("cellEdited", function(cell){
+    console.log("The cell was edited", cell);
+    myTable.updateData([{id: cell.getRow().getIndex(), [cell.getField()]: cell.getValue()}]);
+});
+
+/**
+ * Exports table data to JSON format.
+ */
+function exportToJSON(){
+    let data = myTable.getData();
+    let dataStr = JSON.stringify(data);
+    downloadData(dataStr, "application/json", "horario.json");
+}
+
+/**
+ * Exports table data to CSV format.
+ */
+function exportToCSV(){
+    myTable.download("csv", "dados.csv");
+}
+
+/**
+ * Downloads data as a file.
+ * 
+ * @param {string} dataStr - The data to be downloaded.
+ * @param {string} mimeType - The MIME type of the data.
+ * @param {string} fileName - The name of the file to be downloaded.
+ */
+function downloadData(dataStr, mimeType, fileName){
+    let blob = new Blob([dataStr], {type: mimeType});
+    let url = window.URL.createObjectURL(blob);
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=> {
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    }, 0);
+}
+
 
 //Para os testes
 module.exports = { handleFileSelect, applyCustomFilters , setFilterMode, filterMode};
