@@ -104,7 +104,7 @@ function handleFileSelect(fileOrUrl) {
             delimiter: ";",
             complete: function(results) {
                 horario = DateConverter.addWeeksToData(results.data);
-                initializeTable(horario)
+                initializeTable(horario);
             }
         });
     }
@@ -116,6 +116,7 @@ function handleFileSelect(fileOrUrl) {
  * @param {Array<Object>} data - The data to be displayed in the table.
  */
 function initializeTable2(data){
+    console.log(data);
     myTable = new Tabulator("#example-table2",{
         data:data,
         columns:[
@@ -167,6 +168,7 @@ function initializeTable2(data){
  * @param {Object[]} data - Array of data rows.
  */
 function initializeTable(data) {
+    console.log(data);
     myTable = new Tabulator("#example-table", {
         data: data,
         columns: [
