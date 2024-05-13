@@ -1,8 +1,6 @@
 const Papa  = require("papaparse");
 const fs = require('node:fs');
 const util = require('util');
-const { get } = require("node:http");
-const { time } = require("node:console");
 
 
 
@@ -43,7 +41,7 @@ function getHorario(classroom,horario){
             horario = results.data;
             var startTime = performance.now()
 
-            findOpenSlots(classroom,horario,new Date(2022,10,21),new Date(2022,10,27)); 
+            console.log(findOpenSlots(classroom,horario,{DataIni:new Date(2022,10,21),DataFim:new Date(2022,10,27)})); 
                 
             var endTime = performance.now()
 
@@ -52,32 +50,40 @@ function getHorario(classroom,horario){
     });
 }
 
-function findOpenSlots(classroom,horario,DataIni,DataFim){
-    var days = [];
-    for(let date = new Date(DataIni.getTime()); date <= DataFim;date.setDate(date.getDate()+1)){
-        days.push(new Date(date.getTime()));
-    }
-    fHorario = horario.filter(aula => {
-        if(aula['Data da aula'] != undefined){
-            const d = aula['Data da aula'].split("/");
-            const date = new Date(d[2], parseInt(d[1])-1, d[0]);
-            return date.getTime() >= DataIni.getTime() && date.getTime() <= DataFim.getTime();
+function findOpenSlots(classroom,horario,filters){
+    if(filters.DataIni != undefined && filters.DataFim != undefined){
+        var days = [];
+        for(let date = new Date(filters.DataIni.getTime()); date <= filters.DataFim;date.setDate(date.getDate()+1)){
+            days.push(new Date(date.getTime()));
         }
-    });
-    var salas = listSalas(classroom);
-    var daySala = [];
-    var slots = [];
-    days.forEach(data => {
-        salas.forEach(sala =>{
-            daySala = getDisponibilidadeSala(fHorario,sala,data);
-            daySala.forEach(time => {
-                slots.push({data:data,sala:sala,hora:time});
+        var fHorario = horario.filter(aula => {
+            if(aula['Data da aula'] != undefined){
+                const d = aula['Data da aula'].split("/");
+                const date = new Date(d[2], parseInt(d[1])-1, d[0]);
+                return date.getTime() >= filters.DataIni.getTime() && date.getTime() <= filters.DataFim.getTime();
+            }
+            return false;
+        });
+        var salas = listSalas(classroom);
+        var daySala = [];
+        var slots = [];
+        days.forEach(data => {
+            var dHorario = fHorario.filter(a => {
+                const d = a['Data da aula'].split("/");
+                const date = new Date(d[2], parseInt(d[1])-1, d[0]);
+                return date.getTime() >= filters.DataIni.getTime() && date.getTime() <= filters.DataFim.getTime();
+            });
+            salas.forEach(sala =>{
+                daySala = getDisponibilidadeSala(dHorario,sala,data);
+                daySala.forEach(time => {
+                    slots.push({data:data,sala:sala,hora:time});
+                });
             });
         });
-    });
-
-    return slots;
-    
+        return slots;
+    }else{
+        return [];
+    }
 }
 
 function listSalas(classroom){
@@ -91,12 +97,7 @@ function listSalas(classroom){
 
 function getDisponibilidadeSala(horario,nome,dia){
     let daysOcupados = horario.filter((aula => {
-        if(aula['Data da aula'] != undefined){
-            const d = aula['Data da aula'].split("/");
-            const date = new Date(d[2], parseInt(d[1])-1, d[0]);
-            return aula['Sala atribuída à aula'].trim() ===nome.trim()&& date.getTime() === dia.getTime();
-        }
-        return false;
+        return aula['Sala atribuída à aula'].trim() ===nome.trim();
     })).sort((a,b) => {
         if(a['Hora início da aula'] != undefined && b['Hora início da aula'] != undefined){
             const t1 = a['Hora início da aula'].split(":");
