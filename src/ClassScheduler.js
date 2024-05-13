@@ -41,8 +41,8 @@ function getHorario(classroom,horario){
             horario = results.data;
             var startTime = performance.now()
 
-            console.log(findOpenSlots(classroom,horario,{DataIni:new Date(2022,10,21),DataFim:new Date(2022,10,27)})); 
-                
+            console.log(findOpenSlots(classroom,horario,{DataIni:new Date(2022,10,21),DataFim:new Date(2022,10,27)}));  
+            
             var endTime = performance.now()
 
             console.log(`Call to doSomething took ${endTime - startTime} milliseconds`)
@@ -64,14 +64,14 @@ function findOpenSlots(classroom,horario,filters){
             }
             return false;
         });
-        var salas = listSalas(classroom);
+        var salas = listSalas(classroom,filters.sala);
         var daySala = [];
         var slots = [];
         days.forEach(data => {
             var dHorario = fHorario.filter(a => {
                 const d = a['Data da aula'].split("/");
                 const date = new Date(d[2], parseInt(d[1])-1, d[0]);
-                return date.getTime() >= filters.DataIni.getTime() && date.getTime() <= filters.DataFim.getTime();
+                return data.getTime()==date.getTime();
             });
             salas.forEach(sala =>{
                 daySala = getDisponibilidadeSala(dHorario,sala,data);
@@ -97,7 +97,7 @@ function listSalas(classroom){
 
 function getDisponibilidadeSala(horario,nome,dia){
     let daysOcupados = horario.filter((aula => {
-        return aula['Sala atribuída à aula'].trim() ===nome.trim();
+        return aula['Sala atribuída à aula'].trim()===nome.trim();
     })).sort((a,b) => {
         if(a['Hora início da aula'] != undefined && b['Hora início da aula'] != undefined){
             const t1 = a['Hora início da aula'].split(":");
@@ -116,7 +116,7 @@ function getDisponibilidadeSala(horario,nome,dia){
         if(time===aula['Hora início da aula'].trim()){
             time=aula['Hora fim da aula'].trim();
         }else{
-            timedays.push({'Hora início da aula':time,'Hora fim da aula':aula['Hora início da aula']});
+            timedays.push({'HoraIni':time,'HoraFim':aula['Hora início da aula']});
             time=aula['Hora fim da aula'].trim();
         }
     });
