@@ -35,6 +35,16 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('csv-file').click();
         }
     });
+    console.log(document.getElementById('example-table').style.display);
+    document.getElementById('menu-btn').addEventListener('click', function() {
+        document.getElementById('example-table').style.display = 'block';
+        document.getElementById('example-table2').style.display = 'none';
+    });
+
+    document.getElementById('salas-btn').addEventListener('click', function() {
+        document.getElementById('example-table').style.display = 'none';
+        document.getElementById('example-table2').style.display = 'block';
+    });
 
     document.getElementById('custom-room-upload').addEventListener('click', function() {
         document.getElementById('classroom-file').click();
