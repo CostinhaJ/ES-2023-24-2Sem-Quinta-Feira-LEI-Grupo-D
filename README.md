@@ -61,8 +61,14 @@ Sugerir slots para alocação de aulas de substituição ou de uma UC, considera
 O usuário pode escolher, eliminar ou adicionar manualmente sugestões na tabela.
 
 =============================================================================================
+# Autores
 
-
+Manuel Cunha 104999
+Edgar Costa 69172
+Rafael Pardal 104741
+Leonardo Costa 104949
+Tiago Varandas Martins 105056 
+João Costa 105530
 
 
 
