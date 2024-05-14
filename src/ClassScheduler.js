@@ -24,30 +24,52 @@ export default class ClassScheduler {
      * @param {Object[]} salas - Dados das salas.
      * @returns {Object[]} Slots de alocação de UC disponíveis.
      */
+
     static findUCAllocationSlots(filters, horario, salas) {
         if (!horario || !salas) {
             alert("Por favor, carregue os ficheiros de horários e salas primeiro.");
             return [];
         }
-
+    
         const slots = this.findOpenSlots(salas, horario, filters);
         const allocatedSlots = [];
-
+    
         for (let i = 0; i < filters.NumberOfClasses; i++) {
             if (slots.length > 0) {
                 const slot = slots.shift();
-                allocatedSlots.push({
-                    ...slot,
+                const allocatedSlot = {
+                    data: slot.data,
+                    sala: slot.sala,
+                    HoraIni: slot.HoraIni,
+                    HoraFim: slot.HoraFim,
                     UC: filters.UCName,
-                    
-                });
+                };
+                allocatedSlots.push(allocatedSlot);
             } else {
                 break;
             }
         }
-
+    
         return allocatedSlots;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * Encontra slots abertos com base nos filtros, horário e salas fornecidos.
@@ -97,6 +119,44 @@ export default class ClassScheduler {
             return [];
         }
     }
+
+ //static findUCAllocationSlots(filters, horario, salas) {
+   //     if (!horario || !salas) {
+     //       alert("Por favor, carregue os ficheiros de horários e salas primeiro.");
+       //     return [];
+        //}
+
+//        const slots = this.findOpenSlots(salas, horario, filters);
+  //      const allocatedSlots = [];
+
+//        for (let i = 0; i < filters.NumberOfClasses; i++) {
+  //          if (slots.length > 0) {
+    //            const slot = slots.shift();
+      //          allocatedSlots.push({
+        //            ...slot,
+          //          UC: filters.UCName,
+                   
+           //     });
+      //      } else {
+     //   break;
+        //    }
+       // }
+
+    //    return allocatedSlots;
+//    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * Lista todas as salas disponíveis.
