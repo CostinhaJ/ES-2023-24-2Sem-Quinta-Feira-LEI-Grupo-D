@@ -1,11 +1,11 @@
 import * as Papa from 'papaparse';
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import DateConverter from './DateConverter.js';
-import ClassScheduler from './ClassScheduler.js'; 
-import d3 from 'd3';
+import ClassScheduler from './ClassScheduler.js';
+import * as d3 from 'd3';
 
 let filterMode = "AND"; // Modo de filtro padrão
-let myTable; // Global variable to store the table instance
+let myTable; // Variável global para armazenar a instância da tabela
 let horario;
 let salas;
 let substitutionTable;
@@ -116,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.style.display = 'none';
         showSubstitutionTable(filters);
     });
-    
 
     // Capturar dados do formulário do modal de alocação de UC
     document.getElementById('uc-allocation-form').addEventListener('submit', function(event) {
@@ -161,16 +160,26 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('add-alternative').addEventListener('click', addAlternativeRowSub);
 });
 
+/**
+ * Mostra o modal de substituição.
+ */
 function showModal() {
     const modal = document.getElementById('substitution-modal');
     modal.style.display = 'block';
 }
 
+/**
+ * Mostra o modal de alocação de UC.
+ */
 function showUCModal() {
     const modal = document.getElementById('uc-allocation-modal');
     modal.style.display = 'block';
 }
 
+/**
+ * Manipula o carregamento do arquivo de salas.
+ * @param {Event} event - O evento de mudança do input de arquivo.
+ */
 function handleClassroomFile(event) {
     Papa.parse(event.target.files[0], {
         header: true,
@@ -178,11 +187,15 @@ function handleClassroomFile(event) {
         complete: (results) => {
             salas = results.data;
             initializeTable2(salas);
-            console.log("Salas carregadas:", salas); // Adicione esta linha para depuração
+            console.log("Salas carregadas:", salas);
         }
     });
 }
 
+/**
+ * Manipula a seleção de arquivo ou URL para carregar dados de horários.
+ * @param {Event|string} fileOrUrl - O evento de mudança do input de arquivo ou a URL do arquivo CSV.
+ */
 function handleFileSelect(fileOrUrl) {
     if (typeof fileOrUrl === 'string') {
         Papa.parse(fileOrUrl, {
@@ -191,7 +204,7 @@ function handleFileSelect(fileOrUrl) {
             complete: function(results) {
                 horario = DateConverter.addWeeksToData(results.data);
                 initializeTable(horario);
-                console.log("Horário carregado a partir de URL:", horario); // Adicione esta linha para depuração
+                console.log("Horário carregado a partir de URL:", horario);
             },
             error: function(error) {
                 console.error("Error fetching CSV file:", error);
@@ -206,12 +219,16 @@ function handleFileSelect(fileOrUrl) {
             complete: function(results) {
                 horario = DateConverter.addWeeksToData(results.data);
                 initializeTable(horario);
-                console.log("Horário carregado:", horario); // Adicione esta linha para depuração
+                console.log("Horário carregado:", horario);
             }
         });
     }
 }
 
+/**
+ * Inicializa a tabela de salas.
+ * @param {Array} data - Dados das salas.
+ */
 function initializeTable2(data) {
     myTable = new Tabulator("#example-table2", {
         data: data,
@@ -258,6 +275,10 @@ function initializeTable2(data) {
     });
 }
 
+/**
+ * Inicializa a tabela de horários.
+ * @param {Array} data - Dados dos horários.
+ */
 function initializeTable(data) {
     myTable = new Tabulator("#example-table", {
         data: data,
@@ -282,8 +303,11 @@ function initializeTable(data) {
     });
 }
 
+/**
+ * Aplica os filtros personalizados à tabela de horários.
+ */
 function applyCustomFilters() {
-    const filters = myTable.getHeaderFilters(); // Uses the global variable directly
+    const filters = myTable.getHeaderFilters(); // Usa a variável global diretamente
     console.log("Modo de filtro atual:", filterMode);
     console.log("Filtros a serem aplicados:", filters);
 
@@ -303,21 +327,37 @@ function applyCustomFilters() {
     }
 }
 
+/**
+ * Define o modo de filtro.
+ * @param {string} mode - Modo de filtro ('AND' ou 'OR').
+ */
 function setFilterMode(mode) {
-    filterMode = mode; // mode should be 'AND' or 'OR'
+    filterMode = mode;
     console.log("Modo de filtro alterado para:", filterMode);
 }
 
+/**
+ * Exporta os dados da tabela para um arquivo JSON.
+ */
 function exportToJSON() {
     let data = myTable.getData();
     let dataStr = JSON.stringify(data);
     downloadData(dataStr, "application/json", "horario.json");
 }
 
+/**
+ * Exporta os dados da tabela para um arquivo CSV.
+ */
 function exportToCSV() {
     myTable.download("csv", "dados.csv");
 }
 
+/**
+ * Faz o download de dados em um arquivo.
+ * @param {string} dataStr - Dados a serem baixados.
+ * @param {string} mimeType - Tipo MIME do arquivo.
+ * @param {string} fileName - Nome do arquivo.
+ */
 function downloadData(dataStr, mimeType, fileName) {
     let blob = new Blob([dataStr], { type: mimeType });
     let url = window.URL.createObjectURL(blob);
@@ -332,9 +372,12 @@ function downloadData(dataStr, mimeType, fileName) {
     }, 0);
 }
 
-// Função para exibir a tabela de substituição
+/**
+ * Exibe a tabela de substituição.
+ * @param {Object} filters - Filtros para buscar slots de substituição.
+ */
 function showSubstitutionTable(filters) {
-    console.log("Filters:", filters); // Adicione esta linha para depurar os filtros
+    console.log("Filters:", filters);
     // Esconder outras tabelas
     document.getElementById('example-table').style.display = 'none';
     document.getElementById('example-table2').style.display = 'none';
@@ -351,12 +394,15 @@ function showSubstitutionTable(filters) {
     
     // Buscar slots de substituição
     const substitutionSlots = ClassScheduler.findSubstitutionSlots(filters, horario, salas);
-    console.log("Substitution Slots:", substitutionSlots); // Adicione esta linha para depurar os slots
+    console.log("Substitution Slots:", substitutionSlots);
     initializeSubstitutionTable(substitutionSlots);
     document.querySelector('.uc-controls').style.display = 'block';
 }
 
-// Função para inicializar a tabela de substituição
+/**
+ * Inicializa a tabela de substituição.
+ * @param {Array} data - Dados dos slots de substituição.
+ */
 function initializeSubstitutionTable(data) {
     substitutionTable = new Tabulator("#substitution-table", {
         data: data,
@@ -373,9 +419,12 @@ function initializeSubstitutionTable(data) {
     });
 }
 
-// Função para exibir a tabela de alocação de UC
+/**
+ * Exibe a tabela de alocação de UC.
+ * @param {Object} filters - Filtros para buscar slots de alocação de UC.
+ */
 function showUCAllocationTable(filters) {
-    console.log("Filters for UC Allocation:", filters); // Adicione esta linha para depurar os filtros
+    console.log("Filters for UC Allocation:", filters);
     // Esconder outras tabelas
     document.getElementById('example-table').style.display = 'none';
     document.getElementById('example-table2').style.display = 'none';
@@ -391,12 +440,15 @@ function showUCAllocationTable(filters) {
     
     // Buscar slots de alocação de UC
     const ucAllocationSlots = ClassScheduler.findUCAllocationSlots(filters, horario, salas);
-    console.log("UC Allocation Slots:", ucAllocationSlots); // Adicione esta linha para depurar os slots
+    console.log("UC Allocation Slots:", ucAllocationSlots);
     initializeUCTable(ucAllocationSlots);
     document.querySelector('.uc-controls').style.display = 'block';
 }
 
-// Função para inicializar a tabela de alocação de UC
+/**
+ * Inicializa a tabela de alocação de UC.
+ * @param {Array} data - Dados dos slots de alocação de UC.
+ */
 function initializeUCTable(data) {
     ucAllocationTable = new Tabulator("#uc-allocation-table", {
         data: data,
@@ -416,11 +468,17 @@ function initializeUCTable(data) {
     });
 }
 
+/**
+ * Remove as linhas selecionadas da tabela de alocação de UC.
+ */
 function removeSelectedRows() {
     const selectedRows = ucAllocationTable.getSelectedRows();
     selectedRows.forEach(row => row.delete());
 }
 
+/**
+ * Adiciona uma linha alternativa na tabela de alocação de UC.
+ */
 function addAlternativeRow() {
     const newRow = {
         data: prompt("Data:"),
@@ -434,12 +492,17 @@ function addAlternativeRow() {
     ucAllocationTable.addRow(newRow);
 }
 
-// Funções para a tabela de substituição
+/**
+ * Remove as linhas selecionadas da tabela de substituição.
+ */
 function removeSelectedRowsSub() {
     const selectedRows = substitutionTable.getSelectedRows();
     selectedRows.forEach(row => row.delete());
 }
 
+/**
+ * Adiciona uma linha alternativa na tabela de substituição.
+ */
 function addAlternativeRowSub() {
     const newRow = {
         data: prompt("Data:"),
@@ -450,6 +513,9 @@ function addAlternativeRowSub() {
     substitutionTable.addRow(newRow);
 }
 
+/**
+ * Aplica os filtros para o gráfico de conflitos.
+ */
 function applyGraphFilters() {
     const courseFilter = document.getElementById('filter-course').value;
     const ucFilter = document.getElementById('filter-uc').value;
@@ -468,6 +534,10 @@ function applyGraphFilters() {
     drawConflictGraph(conflicts);
 }
 
+/**
+ * Desenha o gráfico de conflitos.
+ * @param {Array} conflicts - Dados dos conflitos.
+ */
 function drawConflictGraph(conflicts) {
     const nodes = [];
     const links = [];
@@ -533,6 +603,17 @@ function drawConflictGraph(conflicts) {
     });
 }
 
+/**
+ * Processa os dados de sala para o heatmap.
+ * @param {Array} horario - Dados dos horários.
+ * @param {Array} salas - Dados das salas.
+ * @param {Object} filters - Filtros para processamento dos dados.
+ * @param {string} filters.roomType - Tipo de sala.
+ * @param {number} filters.roomCapacity - Capacidade da sala.
+ * @param {string} filters.startDate - Data de início.
+ * @param {string} filters.endDate - Data de fim.
+ * @returns {Array} - Dados processados para o heatmap.
+ */
 function processRoomData(horario, salas, filters) {
     const processedData = [];
 
@@ -579,6 +660,10 @@ function processRoomData(horario, salas, filters) {
     return processedData;
 }
 
+/**
+ * Desenha o heatmap.
+ * @param {Array} data - Dados processados para o heatmap.
+ */
 function drawHeatmap(data) {
     const daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     const hoursOfDay = Array.from({ length: 15 }, (v, i) => i + 8); // 8h-22h
@@ -628,6 +713,9 @@ function drawHeatmap(data) {
     });
 }
 
+/**
+ * Aplica os filtros para o heatmap.
+ */
 function applyHeatmapFilters() {
     const roomType = document.getElementById('filter-room-type').value;
     const roomCapacity = document.getElementById('filter-room-capacity').value;

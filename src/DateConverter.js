@@ -1,8 +1,8 @@
 export default class DateConverter {
     /**
-     * Converts a date string to a Date object.
-     * @param {string} str - Date string in the format 'dd/mm/yyyy'.
-     * @returns {Date | null} Date object if valid, null otherwise.
+     * Converte uma string de data para um objeto Date.
+     * @param {string} str - String de data no formato 'dd/mm/yyyy'.
+     * @returns {Date | null} Objeto Date se válido, null caso contrário.
      */
     static convertToDate(str) {
         if (!str) {
@@ -17,9 +17,9 @@ export default class DateConverter {
     }
 
     /**
-     * Adds week information to each data row.
-     * @param {Object[]} data - Array of data rows.
-     * @returns {Object[]} Array of data rows with added week information.
+     * Adiciona informações de semana a cada linha de dados.
+     * @param {Object[]} data - Array de linhas de dados.
+     * @returns {Object[]} Array de linhas de dados com informações de semana adicionadas.
      */
     static addWeeksToData(data) {
         return data.map(row => {
@@ -42,9 +42,9 @@ export default class DateConverter {
     }
 
     /**
-     * Calculates the week number of a given date.
-     * @param {Date} d - Date object.
-     * @returns {number} Week number.
+     * Calcula o número da semana de uma data específica.
+     * @param {Date} d - Objeto Date.
+     * @returns {number} Número da semana.
      */
     static getWeekNumber(d) {
         d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -55,9 +55,9 @@ export default class DateConverter {
     }
 
     /**
-     * Calculates the week number of the semester.
-     * @param {number} weekOfYear - Week number of the year.
-     * @returns {number | string} Week number of the semester or 'Fora do semestre' (out of semester).
+     * Calcula o número da semana do semestre.
+     * @param {number} weekOfYear - Número da semana do ano.
+     * @returns {number | string} Número da semana do semestre ou 'Fora do semestre'.
      */
     static getSemesterWeekNumber(weekOfYear) {
         if (weekOfYear >= 5 && weekOfYear <= 19) {

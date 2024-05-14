@@ -26,40 +26,40 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>export default class DateConverter{
-        /**
-     * Converts a date string to a Date object.
-     * @param {string} str - Date string in the format 'dd/mm/yyyy'.
-     * @returns {Date | null} Date object if valid, null otherwise.
+            <pre class="prettyprint source linenums"><code>export default class DateConverter {
+    /**
+     * Converte uma string de data para um objeto Date.
+     * @param {string} str - String de data no formato 'dd/mm/yyyy'.
+     * @returns {Date | null} Objeto Date se válido, null caso contrário.
      */
     static convertToDate(str) {
         if (!str) {
             console.log("Data inválida fornecida para convertToDate:", str);
-            return null; // or a default date if preferred
+            return null;
         }
         const parts = str.split('/');
         const day = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1; // -1 because months in JavaScript start from 0
+        const month = parseInt(parts[1], 10) - 1;
         const year = parseInt(parts[2], 10);
         return new Date(year, month, day);
     }
 
     /**
-     * Adds week information to each data row.
-     * @param {Object[]} data - Array of data rows.
-     * @returns {Object[]} Array of data rows with added week information.
+     * Adiciona informações de semana a cada linha de dados.
+     * @param {Object[]} data - Array de linhas de dados.
+     * @returns {Object[]} Array de linhas de dados com informações de semana adicionadas.
      */
     static addWeeksToData(data) {
         return data.map(row => {
             if (!row['Data da aula']) {
                 console.log("Data da aula ausente para a linha:", row);
-                return row; // Or add some default handling for missing dates
+                return row;
             }
 
             const date = DateConverter.convertToDate(row['Data da aula']);
             if (isNaN(date.getTime())) {
                 console.log("Data da aula inválida para a linha:", row);
-                return row; // Or add some default handling for invalid dates
+                return row;
             }
 
             const weekOfYear = DateConverter.getWeekNumber(date);
@@ -70,9 +70,9 @@
     }
 
     /**
-     * Calculates the week number of a given date.
-     * @param {Date} d - Date object.
-     * @returns {number} Week number.
+     * Calcula o número da semana de uma data específica.
+     * @param {Date} d - Objeto Date.
+     * @returns {number} Número da semana.
      */
     static getWeekNumber(d) {
         d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -83,28 +83,20 @@
     }
 
     /**
-     * Calculates the week number of the semester.
-     * @param {number} weekOfYear - Week number of the year.
-     * @returns {number | string} Week number of the semester or 'Fora do semestre' (out of semester).
+     * Calcula o número da semana do semestre.
+     * @param {number} weekOfYear - Número da semana do ano.
+     * @returns {number | string} Número da semana do semestre ou 'Fora do semestre'.
      */
     static getSemesterWeekNumber(weekOfYear) {
         if (weekOfYear >= 5 &amp;&amp; weekOfYear &lt;= 19) {
-            // First Semester
-            return weekOfYear - 4; // Adjustment to start semester week from 1
+            return weekOfYear - 4;
         } else if (weekOfYear >= 35 &amp;&amp; weekOfYear &lt;= 49) {
-            // Second Semester
-            return weekOfYear - 34; // Adjustment to start semester week from 1
+            return weekOfYear - 34;
         } else {
-            // Out of Semester
             return 'Fora do semestre';
         }
     }
-   
-}
-
-
-
-//module.exports= { addWeeksToData, convertToDate,getWeekNumber, getSemesterWeekNumber};</code></pre>
+}</code></pre>
         </article>
     </section>
 
@@ -114,13 +106,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-csvHandler.html">csvHandler</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addWeeksToData">addWeeksToData</a></li><li><a href="global.html#convertToDate">convertToDate</a></li><li><a href="global.html#getSemesterWeekNumber">getSemesterWeekNumber</a></li><li><a href="global.html#getWeekNumber">getWeekNumber</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addAlternativeRow">addAlternativeRow</a></li><li><a href="global.html#addAlternativeRowSub">addAlternativeRowSub</a></li><li><a href="global.html#addWeeksToData">addWeeksToData</a></li><li><a href="global.html#applyCustomFilters">applyCustomFilters</a></li><li><a href="global.html#applyGraphFilters">applyGraphFilters</a></li><li><a href="global.html#applyHeatmapFilters">applyHeatmapFilters</a></li><li><a href="global.html#convertToDate">convertToDate</a></li><li><a href="global.html#downloadData">downloadData</a></li><li><a href="global.html#drawConflictGraph">drawConflictGraph</a></li><li><a href="global.html#drawHeatmap">drawHeatmap</a></li><li><a href="global.html#exportToCSV">exportToCSV</a></li><li><a href="global.html#exportToJSON">exportToJSON</a></li><li><a href="global.html#findConflicts">findConflicts</a></li><li><a href="global.html#findOpenSlots">findOpenSlots</a></li><li><a href="global.html#findSubstitutionSlots">findSubstitutionSlots</a></li><li><a href="global.html#findUCAllocationSlots">findUCAllocationSlots</a></li><li><a href="global.html#getDisponibilidadeSala">getDisponibilidadeSala</a></li><li><a href="global.html#getSemesterWeekNumber">getSemesterWeekNumber</a></li><li><a href="global.html#getWeekNumber">getWeekNumber</a></li><li><a href="global.html#handleClassroomFile">handleClassroomFile</a></li><li><a href="global.html#handleFileSelect">handleFileSelect</a></li><li><a href="global.html#initializeSubstitutionTable">initializeSubstitutionTable</a></li><li><a href="global.html#initializeTable">initializeTable</a></li><li><a href="global.html#initializeTable2">initializeTable2</a></li><li><a href="global.html#initializeUCTable">initializeUCTable</a></li><li><a href="global.html#isConflicting">isConflicting</a></li><li><a href="global.html#listSalas">listSalas</a></li><li><a href="global.html#processRoomData">processRoomData</a></li><li><a href="global.html#removeSelectedRows">removeSelectedRows</a></li><li><a href="global.html#removeSelectedRowsSub">removeSelectedRowsSub</a></li><li><a href="global.html#setFilterMode">setFilterMode</a></li><li><a href="global.html#showModal">showModal</a></li><li><a href="global.html#showSubstitutionTable">showSubstitutionTable</a></li><li><a href="global.html#showUCAllocationTable">showUCAllocationTable</a></li><li><a href="global.html#showUCModal">showUCModal</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Apr 25 2024 16:15:46 GMT+0100 (Western European Summer Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Tue May 14 2024 07:53:14 GMT+0100 (Western European Summer Time)
 </footer>
 
 <script> prettyPrint(); </script>

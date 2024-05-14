@@ -26,37 +26,25 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code> import * as Papa from 'papaparse';
- import {TabulatorFull as Tabulator, TabulatorFull} from 'tabulator-tables';
- import DateConverter from './DateConverter.js';
- //const { addWeeksToData } = require('./DateConverter.js');
- 
-  
-// @ts-check
-/**
- * @fileoverview Handles CSV file parsing, data manipulation, and table initialization.
- * @module csvHandler
- */
+            <pre class="prettyprint source linenums"><code>import * as Papa from 'papaparse';
+import { TabulatorFull as Tabulator } from 'tabulator-tables';
+import DateConverter from './DateConverter.js';
+import ClassScheduler from './ClassScheduler.js';
+import * as d3 from 'd3';
 
 let filterMode = "AND"; // Modo de filtro padrão
-
-/** @type {Tabulator} */
-let myTable; // Global variable to store the table instance
-
+let myTable; // Variável global para armazenar a instância da tabela
 let horario;
 let salas;
+let substitutionTable;
+let ucAllocationTable;
 
-/**
- * Event listener for DOMContentLoaded event.
- * Adds event listeners for file upload, filter buttons, and apply filters button.
- */
 document.addEventListener('DOMContentLoaded', () => {
-    // Add event listener for custom file upload button
     document.getElementById('custom-file-upload').addEventListener('click', function() {
-        const isUrl = confirm("Deseja carregar a partir de um URL? \nSe sim, clique Ok. Se não, clique em Cancelar")
-        if(isUrl){
-            const url = prompt("URL do arquivo CSV:")
-            if(url){
+        const isUrl = confirm("Deseja carregar a partir de um URL? \nSe sim, clique Ok. Se não, clique em Cancelar");
+        if (isUrl) {
+            const url = prompt("URL do arquivo CSV:");
+            if (url) {
                 handleFileSelect(url);
             }
         } else {
@@ -64,89 +52,215 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    document.getElementById('menu-btn').addEventListener('click', function() {
+        document.getElementById('example-table').style.display = 'block';
+        document.getElementById('example-table2').style.display = 'none';
+        document.getElementById('substitution-table').style.display = 'none';
+        document.getElementById('uc-allocation-table').style.display = 'none';
+        document.querySelector('.uc-controls').style.display = 'none';
+    });
+
+    document.getElementById('salas-btn').addEventListener('click', function() {
+        document.getElementById('example-table').style.display = 'none';
+        document.getElementById('example-table2').style.display = 'block';
+        document.getElementById('substitution-table').style.display = 'none';
+        document.getElementById('uc-allocation-table').style.display = 'none';
+        document.querySelector('.uc-controls').style.display = 'none';
+    });
+
+    document.getElementById('sub-btn').addEventListener('click', function() {
+        showModal();
+    });
+
+    document.getElementById('uc-allocation-btn').addEventListener('click', function() {
+        showUCModal();
+    });
+
     document.getElementById('custom-room-upload').addEventListener('click', function() {
         document.getElementById('classroom-file').click();
     });
 
-    // Add event listener for CSV file input change
     document.getElementById('csv-file').addEventListener('change', handleFileSelect, false);
     document.getElementById('classroom-file').addEventListener('change', handleClassroomFile, false);
 
-    // Add event listeners for filter buttons
     document.getElementById('filter-and').addEventListener('click', () => setFilterMode('AND'));
     document.getElementById('filter-or').addEventListener('click', () => setFilterMode('OR'));
 
-    // Add event listener for apply filters button
     document.getElementById('apply-filters').addEventListener('click', applyCustomFilters);
-
-    //Add event listener for export csv or json
     document.getElementById('export-json').addEventListener('click', exportToJSON);
     document.getElementById('export-csv').addEventListener('click', exportToCSV);
 
+    document.getElementById('apply-graph-filters').addEventListener('click', applyGraphFilters);
+
+    document.getElementById('apply-heatmap-filters').addEventListener('click', applyHeatmapFilters);
+
+    // Configurar o modal
+    const modal = document.getElementById('substitution-modal');
+    const span = document.getElementsByClassName('close')[0];
+
+    span.onclick = function() {
+        modal.style.display = 'none';
+    };
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    };
+
+    // Configurar o modal de alocação de UC
+    const ucModal = document.getElementById('uc-allocation-modal');
+    const spanUC = document.getElementsByClassName('close-uc')[0];
+
+    spanUC.onclick = function() {
+        ucModal.style.display = 'none';
+    };
+
+    window.onclick = function(event) {
+        if (event.target == ucModal) {
+            ucModal.style.display = 'none';
+        }
+    };
+
+    // Capturar dados do formulário do modal de substituição
+    document.getElementById('substitution-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const startDate = document.getElementById('start-date').value;
+        const endDate = document.getElementById('end-date').value;
+        const excludePeriods = document.getElementById('exclude-periods').value.split(',');
+        const includePeriods = document.getElementById('include-periods').value.split(',');
+        const preferredRooms = document.getElementById('preferred-rooms').value.split(',');
+        const excludedRooms = document.getElementById('excluded-rooms').value.split(',');
+
+        const filters = {
+            DataIni: new Date(startDate),
+            DataFim: new Date(endDate),
+            ExcludePeriods: excludePeriods,
+            IncludePeriods: includePeriods,
+            PreferredRooms: preferredRooms,
+            ExcludedRooms: excludedRooms
+        };
+
+        modal.style.display = 'none';
+        showSubstitutionTable(filters);
+    });
+
+    // Capturar dados do formulário do modal de alocação de UC
+    document.getElementById('uc-allocation-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const ucName = document.getElementById('uc-name').value;
+        const numberOfClasses = document.getElementById('number-of-classes').value;
+        const startDateUC = document.getElementById('start-date-uc').value;
+        const endDateUC = document.getElementById('end-date-uc').value;
+        const excludePeriodsUC = document.getElementById('exclude-periods-uc').value.split(',');
+        const includePeriodsUC = document.getElementById('include-periods-uc').value.split(',');
+        const preferredRoomsUC = document.getElementById('preferred-rooms-uc').value.split(',');
+        const excludedRoomsUC = document.getElementById('excluded-rooms-uc').value.split(',');
+
+        const filters = {
+            UCName: ucName,
+            NumberOfClasses: parseInt(numberOfClasses),
+            DataIni: new Date(startDateUC),
+            DataFim: new Date(endDateUC),
+            ExcludePeriods: excludePeriodsUC,
+            IncludePeriods: includePeriodsUC,
+            PreferredRooms: preferredRoomsUC,
+            ExcludedRooms: excludedRoomsUC
+        };
+
+        ucModal.style.display = 'none';
+
+        // Verificação adicional antes de chamar a função
+        if (!horario || !salas) {
+            alert("Por favor, carregue os ficheiros de horários e salas primeiro.");
+            return;
+        }
+
+        showUCAllocationTable(filters);
+    });
+
+    // Botões para remover sugestões e adicionar alternativas
+    document.getElementById('remove-suggestions').addEventListener('click', removeSelectedRows);
+    document.getElementById('add-alternative').addEventListener('click', addAlternativeRow);
+
+    // Botões para remover sugestões e adicionar alternativas
+    document.getElementById('remove-suggestions').addEventListener('click', removeSelectedRowsSub);
+    document.getElementById('add-alternative').addEventListener('click', addAlternativeRowSub);
 });
 
 /**
- * Handles the file uploaded for classroom data.
- * 
- * @param {Object} file - The file object representing the uploaded file.
+ * Mostra o modal de substituição.
  */
-function handleClassroomFile(file){
-    Papa.parse(file.target.files[0], {
+function showModal() {
+    const modal = document.getElementById('substitution-modal');
+    modal.style.display = 'block';
+}
+
+/**
+ * Mostra o modal de alocação de UC.
+ */
+function showUCModal() {
+    const modal = document.getElementById('uc-allocation-modal');
+    modal.style.display = 'block';
+}
+
+/**
+ * Manipula o carregamento do arquivo de salas.
+ * @param {Event} event - O evento de mudança do input de arquivo.
+ */
+function handleClassroomFile(event) {
+    Papa.parse(event.target.files[0], {
         header: true,
         delimiter: ";",
         complete: (results) => {
             salas = results.data;
             initializeTable2(salas);
-            console.log(salas);
+            console.log("Salas carregadas:", salas);
         }
     });
 }
 
-
-
 /**
- * Handles file selection event.
- * Parses the CSV file and initializes the table.
- * @param {string | Event} fileOrUrl - File or URL of the CSV file, or event object.
+ * Manipula a seleção de arquivo ou URL para carregar dados de horários.
+ * @param {Event|string} fileOrUrl - O evento de mudança do input de arquivo ou a URL do arquivo CSV.
  */
 function handleFileSelect(fileOrUrl) {
-    if(typeof fileOrUrl === 'string'){
-        // Parse CSV from URL
+    if (typeof fileOrUrl === 'string') {
         Papa.parse(fileOrUrl, {
             download: true,
             header: true,
-            complete: function(results){
+            complete: function(results) {
                 horario = DateConverter.addWeeksToData(results.data);
-                initializeTable(horario)
+                initializeTable(horario);
+                console.log("Horário carregado a partir de URL:", horario);
             },
             error: function(error) {
                 console.error("Error fetching CSV file:", error);
-                alert("Erro ao carregar arquivo CSV. Verifique se o URL está correto e tente novamente")
+                alert("Erro ao carregar arquivo CSV. Verifique se o URL está correto e tente novamente");
             }
         });
     } else {
-        // Parse CSV from file input
-        const file= fileOrUrl.target.files[0];
+        const file = fileOrUrl.target.files[0];
         Papa.parse(file, {
             header: true,
             delimiter: ";",
             complete: function(results) {
                 horario = DateConverter.addWeeksToData(results.data);
-                initializeTable(horario)
+                initializeTable(horario);
+                console.log("Horário carregado:", horario);
             }
         });
     }
 }
 
 /**
- * Initializes a Tabulator table with provided data and settings.
- * 
- * @param {Array&lt;Object>} data - The data to be displayed in the table.
+ * Inicializa a tabela de salas.
+ * @param {Array} data - Dados das salas.
  */
-function initializeTable2(data){
-    myTable = new Tabulator("#example-table2",{
-        data:data,
-        columns:[
+function initializeTable2(data) {
+    myTable = new Tabulator("#example-table2", {
+        data: data,
+        columns: [
             {title: "Edificio", field: "Edif�cio", headerFilter: "input"},
             {title: "Nome sala", field: "Nome sala", headerFilter: "input"},
             {title: "Capacidade Normal", field: "Capacidade Normal", headerFilter: "input"},
@@ -186,31 +300,30 @@ function initializeTable2(data){
         layout: "fitData",
         pagination: "local",
         paginationSize: 15,
-
-    })
+    });
 }
 
 /**
- * Initializes the Tabulator table with the provided data.
- * @param {Object[]} data - Array of data rows.
+ * Inicializa a tabela de horários.
+ * @param {Array} data - Dados dos horários.
  */
 function initializeTable(data) {
     myTable = new Tabulator("#example-table", {
         data: data,
         columns: [
-            {title: "Curso", field: "Curso", headerFilter: "input"},
-            {title: "Unidade Curricular", field: "Unidade Curricular", headerFilter: "input"},
-            {title: "Turno", field: "Turno", headerFilter: "input"},
-            {title: "Turma", field: "Turma", headerFilter: "input"},
-            {title: "Inscritos no turno", field: "Inscritos no turno", headerFilter: "input"},
-            {title: "Dia da semana", field: "Dia da semana", headerFilter: "input"},
-            {title: "Hora início da aula", field: "Hora início da aula", headerFilter: "input"},
-            {title: "Hora fim da aula", field: "Hora fim da aula", headerFilter: "input"},
-            {title: "Data da aula", field: "Data da aula", headerFilter: "input"},
-            {title: "Características da sala pedida para a aula", field: "Características da sala pedida para a aula", headerFilter: "input"},
-            {title: "Sala atribuída à aula", field: "Sala atribuída à aula", headerFilter: "input"},
-            {title: "Semana do ano", field: "Semana do ano", headerFilter: "input"},
-            {title: "Semana do semestre", field: "Semana do semestre", headerFilter: "input"},
+            { title: "Curso", field: "Curso", headerFilter: "input" },
+            { title: "Unidade Curricular", field: "Unidade Curricular", headerFilter: "input" },
+            { title: "Turno", field: "Turno", headerFilter: "input" },
+            { title: "Turma", field: "Turma", headerFilter: "input" },
+            { title: "Inscritos no turno", field: "Inscritos no turno", headerFilter: "input" },
+            { title: "Dia da semana", field: "Dia da semana", headerFilter: "input" },
+            { title: "Hora início da aula", field: "Hora início da aula", headerFilter: "input" },
+            { title: "Hora fim da aula", field: "Hora fim da aula", headerFilter: "input" },
+            { title: "Data da aula", field: "Data da aula", headerFilter: "input" },
+            { title: "Características da sala pedida para a aula", field: "Características da sala pedida para a aula", headerFilter: "input" },
+            { title: "Sala atribuída à aula", field: "Sala atribuída à aula", headerFilter: "input" },
+            { title: "Semana do ano", field: "Semana do ano", headerFilter: "input" },
+            { title: "Semana do semestre", field: "Semana do semestre", headerFilter: "input" },
         ],
         layout: "fitColumns",
         pagination: "local",
@@ -219,16 +332,15 @@ function initializeTable(data) {
 }
 
 /**
- * Applies custom filters to the table based on the selected filter mode.
+ * Aplica os filtros personalizados à tabela de horários.
  */
 function applyCustomFilters() {
-    const filters = myTable.getHeaderFilters(); // Uses the global variable directly
-    
+    const filters = myTable.getHeaderFilters(); // Usa a variável global diretamente
     console.log("Modo de filtro atual:", filterMode);
     console.log("Filtros a serem aplicados:", filters);
 
     if (filterMode === "AND") {
-        myTable.setFilter(filters.map(filter => ({field: filter.field, type:"like", value: filter.value})));
+        myTable.setFilter(filters.map(filter => ({ field: filter.field, type: "like", value: filter.value })));
         console.log("Filtros AND aplicados.");
     } else {
         myTable.clearFilter(true);
@@ -244,66 +356,410 @@ function applyCustomFilters() {
 }
 
 /**
- * Sets the filter mode to either 'AND' or 'OR'.
- * 
- * @param {string} mode - Filter mode ('AND' or 'OR').
+ * Define o modo de filtro.
+ * @param {string} mode - Modo de filtro ('AND' ou 'OR').
  */
 function setFilterMode(mode) {
-    filterMode = mode; // mode should be 'AND' or 'OR'
+    filterMode = mode;
     console.log("Modo de filtro alterado para:", filterMode);
 }
 
 /**
- * Handles the 'cellEdited' event of the table.
- * 
- * @param {Object} cell - The cell object that was edited.
+ * Exporta os dados da tabela para um arquivo JSON.
  */
-// myTable.on("cellEdited", function(cell){
-//     console.log("The cell was edited", cell);
-//     myTable.updateData([{id: cell.getRow().getIndex(), [cell.getField()]: cell.getValue()}]);
-// });
-
-/**
- * Exports table data to JSON format.
- */
-function exportToJSON(){
+function exportToJSON() {
     let data = myTable.getData();
     let dataStr = JSON.stringify(data);
     downloadData(dataStr, "application/json", "horario.json");
 }
 
 /**
- * Exports table data to CSV format.
+ * Exporta os dados da tabela para um arquivo CSV.
  */
-function exportToCSV(){
+function exportToCSV() {
     myTable.download("csv", "dados.csv");
 }
 
 /**
- * Downloads data as a file.
- * 
- * @param {string} dataStr - The data to be downloaded.
- * @param {string} mimeType - The MIME type of the data.
- * @param {string} fileName - The name of the file to be downloaded.
+ * Faz o download de dados em um arquivo.
+ * @param {string} dataStr - Dados a serem baixados.
+ * @param {string} mimeType - Tipo MIME do arquivo.
+ * @param {string} fileName - Nome do arquivo.
  */
-function downloadData(dataStr, mimeType, fileName){
-    let blob = new Blob([dataStr], {type: mimeType});
+function downloadData(dataStr, mimeType, fileName) {
+    let blob = new Blob([dataStr], { type: mimeType });
     let url = window.URL.createObjectURL(blob);
     let a = document.createElement("a");
     a.href = url;
     a.download = fileName;
     document.body.appendChild(a);
     a.click();
-    setTimeout(()=> {
+    setTimeout(() => {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
     }, 0);
 }
 
+/**
+ * Exibe a tabela de substituição.
+ * @param {Object} filters - Filtros para buscar slots de substituição.
+ */
+function showSubstitutionTable(filters) {
+    console.log("Filters:", filters);
+    // Esconder outras tabelas
+    document.getElementById('example-table').style.display = 'none';
+    document.getElementById('example-table2').style.display = 'none';
+    document.getElementById('uc-allocation-table').style.display = 'none';
+    document.querySelector('.uc-controls').style.display = 'none';
 
-//Para os testes
+    // Mostrar a tabela de substituição (crie se necessário)
+    let subTable = document.getElementById('substitution-table');
+    if (!subTable) {
+        subTable = document.createElement('div');
+        subTable.id = 'substitution-table';
+        document.body.appendChild(subTable);
+    }
+    
+    // Buscar slots de substituição
+    const substitutionSlots = ClassScheduler.findSubstitutionSlots(filters, horario, salas);
+    console.log("Substitution Slots:", substitutionSlots);
+    initializeSubstitutionTable(substitutionSlots);
+    document.querySelector('.uc-controls').style.display = 'block';
+}
 
-module.exports = {handleFileSelect, setFilterMode , handleClassroomFile};
+/**
+ * Inicializa a tabela de substituição.
+ * @param {Array} data - Dados dos slots de substituição.
+ */
+function initializeSubstitutionTable(data) {
+    substitutionTable = new Tabulator("#substitution-table", {
+        data: data,
+        columns: [
+            { title: "Data", field: "data", headerFilter: "input" },
+            { title: "Sala", field: "sala", headerFilter: "input" },
+            { title: "HoraIni", field: "HoraIni", headerFilter: "input" },
+            { title: "HoraFim", field: "HoraFim", headerFilter: "input" },
+            { title: "Selecionar", formatter: "rowSelection", titleFormatter: "rowSelection", align: "center", headerSort: false },
+        ],
+        layout: "fitColumns",
+        pagination: "local",
+        paginationSize: 15,
+    });
+}
+
+/**
+ * Exibe a tabela de alocação de UC.
+ * @param {Object} filters - Filtros para buscar slots de alocação de UC.
+ */
+function showUCAllocationTable(filters) {
+    console.log("Filters for UC Allocation:", filters);
+    // Esconder outras tabelas
+    document.getElementById('example-table').style.display = 'none';
+    document.getElementById('example-table2').style.display = 'none';
+    document.getElementById('substitution-table').style.display = 'none';
+
+    // Mostrar a tabela de alocação de UC (crie se necessário)
+    let ucTable = document.getElementById('uc-allocation-table');
+    if (!ucTable) {
+        ucTable = document.createElement('div');
+        ucTable.id = 'uc-allocation-table';
+        document.body.appendChild(ucTable);
+    }
+    
+    // Buscar slots de alocação de UC
+    const ucAllocationSlots = ClassScheduler.findUCAllocationSlots(filters, horario, salas);
+    console.log("UC Allocation Slots:", ucAllocationSlots);
+    initializeUCTable(ucAllocationSlots);
+    document.querySelector('.uc-controls').style.display = 'block';
+}
+
+/**
+ * Inicializa a tabela de alocação de UC.
+ * @param {Array} data - Dados dos slots de alocação de UC.
+ */
+function initializeUCTable(data) {
+    ucAllocationTable = new Tabulator("#uc-allocation-table", {
+        data: data,
+        columns: [
+            { title: "Data", field: "data", headerFilter: "input" },
+            { title: "Sala", field: "sala", headerFilter: "input" },
+            { title: "HoraIni", field: "HoraIni", headerFilter: "input" },
+            { title: "HoraFim", field: "HoraFim", headerFilter: "input" },
+            { title: "UC", field: "UC", headerFilter: "input" },
+            { title: "Turma", field: "Turma", headerFilter: "input" },
+            { title: "Curso", field: "Curso", headerFilter: "input" },
+            { title: "Selecionar", formatter: "rowSelection", titleFormatter: "rowSelection", align: "center", headerSort: false },
+        ],
+        layout: "fitColumns",
+        pagination: "local",
+        paginationSize: 15,
+    });
+}
+
+/**
+ * Remove as linhas selecionadas da tabela de alocação de UC.
+ */
+function removeSelectedRows() {
+    const selectedRows = ucAllocationTable.getSelectedRows();
+    selectedRows.forEach(row => row.delete());
+}
+
+/**
+ * Adiciona uma linha alternativa na tabela de alocação de UC.
+ */
+function addAlternativeRow() {
+    const newRow = {
+        data: prompt("Data:"),
+        sala: prompt("Sala:"),
+        HoraIni: prompt("Hora de Início:"),
+        HoraFim: prompt("Hora de Fim:"),
+        UC: prompt("UC:"),
+        Turma: prompt("Turma:"),
+        Curso: prompt("Curso:")
+    };
+    ucAllocationTable.addRow(newRow);
+}
+
+/**
+ * Remove as linhas selecionadas da tabela de substituição.
+ */
+function removeSelectedRowsSub() {
+    const selectedRows = substitutionTable.getSelectedRows();
+    selectedRows.forEach(row => row.delete());
+}
+
+/**
+ * Adiciona uma linha alternativa na tabela de substituição.
+ */
+function addAlternativeRowSub() {
+    const newRow = {
+        data: prompt("Data:"),
+        sala: prompt("Sala:"),
+        HoraIni: prompt("Hora de Início:"),
+        HoraFim: prompt("Hora de Fim:")
+    };
+    substitutionTable.addRow(newRow);
+}
+
+/**
+ * Aplica os filtros para o gráfico de conflitos.
+ */
+function applyGraphFilters() {
+    const courseFilter = document.getElementById('filter-course').value;
+    const ucFilter = document.getElementById('filter-uc').value;
+    const dateStartFilter = document.getElementById('filter-date-start').value;
+    const dateEndFilter = document.getElementById('filter-date-end').value;
+
+    const filteredData = horario.filter(aula => {
+        const courseMatch = courseFilter ? aula['Curso'].includes(courseFilter) : true;
+        const ucMatch = ucFilter ? aula['Unidade Curricular'].includes(ucFilter) : true;
+        const date = DateConverter.convertToDate(aula['Data da aula']);
+        const dateMatch = (!dateStartFilter || date >= new Date(dateStartFilter)) &amp;&amp; (!dateEndFilter || date &lt;= new Date(dateEndFilter));
+        return courseMatch &amp;&amp; ucMatch &amp;&amp; dateMatch;
+    });
+
+    const conflicts = ClassScheduler.findConflicts(filteredData);
+    drawConflictGraph(conflicts);
+}
+
+/**
+ * Desenha o gráfico de conflitos.
+ * @param {Array} conflicts - Dados dos conflitos.
+ */
+function drawConflictGraph(conflicts) {
+    const nodes = [];
+    const links = [];
+
+    conflicts.forEach(conflict => {
+        const source = conflict.source['Unidade Curricular'] + " " + conflict.source['Data da aula'] + " " + conflict.source['Hora início da aula'];
+        const target = conflict.target['Unidade Curricular'] + " " + conflict.target['Data da aula'] + " " + conflict.target['Hora início da aula'];
+
+        if (!nodes.find(node => node.id === source)) {
+            nodes.push({ id: source });
+        }
+        if (!nodes.find(node => node.id === target)) {
+            nodes.push({ id: target });
+        }
+
+        links.push({ source, target });
+    });
+
+    const width = 800;
+    const height = 600;
+
+    const svg = d3.select("#conflict-graph").html("").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    const simulation = d3.forceSimulation(nodes)
+        .force("link", d3.forceLink(links).id(d => d.id).distance(200))
+        .force("charge", d3.forceManyBody().strength(-500))
+        .force("center", d3.forceCenter(width / 2, height / 2));
+
+    const link = svg.append("g")
+        .selectAll("line")
+        .data(links)
+        .enter().append("line")
+        .attr("stroke-width", 2)
+        .attr("stroke", "#999");
+
+    const node = svg.append("g")
+        .selectAll("circle")
+        .data(nodes)
+        .enter().append("circle")
+        .attr("r", 5)
+        .attr("fill", "#69b3a2");
+
+    const label = svg.append("g")
+        .selectAll("text")
+        .data(nodes)
+        .enter().append("text")
+        .attr("dy", -3)
+        .text(d => d.id);
+
+    simulation.on("tick", () => {
+        link.attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+
+        node.attr("cx", d => d.x)
+            .attr("cy", d => d.y);
+
+        label.attr("x", d => d.x)
+            .attr("y", d => d.y);
+    });
+}
+
+/**
+ * Processa os dados de sala para o heatmap.
+ * @param {Array} horario - Dados dos horários.
+ * @param {Array} salas - Dados das salas.
+ * @param {Object} filters - Filtros para processamento dos dados.
+ * @param {string} filters.roomType - Tipo de sala.
+ * @param {number} filters.roomCapacity - Capacidade da sala.
+ * @param {string} filters.startDate - Data de início.
+ * @param {string} filters.endDate - Data de fim.
+ * @returns {Array} - Dados processados para o heatmap.
+ */
+function processRoomData(horario, salas, filters) {
+    const processedData = [];
+
+    const startDate = new Date(filters.startDate);
+    const endDate = new Date(filters.endDate);
+
+    // Iterar sobre cada sala
+    salas.forEach(sala => {
+        // Aplicar filtros de sala
+        const isRoomTypeMatch = filters.roomType ? sala['Nome sala'].includes(filters.roomType) : true;
+        const isRoomCapacityMatch = filters.roomCapacity ? parseInt(sala['Capacidade Normal']) >= filters.roomCapacity : true;
+
+        if (isRoomTypeMatch &amp;&amp; isRoomCapacityMatch) {
+            // Inicializar mapa de ocupação
+            const roomOccupation = {};
+
+            // Iterar sobre cada dia dentro do intervalo
+            for (let date = new Date(startDate); date &lt;= endDate; date.setDate(date.getDate() + 1)) {
+                const dayStr = date.toISOString().split('T')[0];
+                roomOccupation[dayStr] = Array(15).fill(0); // Inicializar slots horários (8h-22h30)
+
+                // Verificar ocupação da sala
+                horario.forEach(aula => {
+                    if (aula['Sala atribuída à aula'].trim() === sala['Nome sala'].trim()) {
+                        const aulaDate = DateConverter.convertToDate(aula['Data da aula']);
+                        if (aulaDate.getTime() === date.getTime()) {
+                            const startHour = parseInt(aula['Hora início da aula'].split(':')[0]) - 8;
+                            const endHour = parseInt(aula['Hora fim da aula'].split(':')[0]) - 8;
+                            for (let h = startHour; h &lt;= endHour; h++) {
+                                roomOccupation[dayStr][h] = 1;
+                            }
+                        }
+                    }
+                });
+            }
+
+            processedData.push({
+                room: sala['Nome sala'],
+                occupation: roomOccupation
+            });
+        }
+    });
+
+    return processedData;
+}
+
+/**
+ * Desenha o heatmap.
+ * @param {Array} data - Dados processados para o heatmap.
+ */
+function drawHeatmap(data) {
+    const daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const hoursOfDay = Array.from({ length: 15 }, (v, i) => i + 8); // 8h-22h
+
+    const margin = { top: 50, right: 0, bottom: 100, left: 30 },
+        width = 900 - margin.left - margin.right,
+        height = 450 - margin.top - margin.bottom;
+
+    const svg = d3.select("#heatmap").html("").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleBand()
+        .range([0, width])
+        .domain(daysOfWeek)
+        .padding(0.01);
+
+    const y = d3.scaleBand()
+        .range([height, 0])
+        .domain(hoursOfDay)
+        .padding(0.01);
+
+    svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x));
+
+    svg.append("g")
+        .call(d3.axisLeft(y));
+
+    const colorScale = d3.scaleSequential(d3.interpolateBlues)
+        .domain([0, 1]);
+
+    data.forEach(roomData => {
+        Object.keys(roomData.occupation).forEach(day => {
+            const dayIndex = new Date(day).getDay();
+            roomData.occupation[day].forEach((value, hourIndex) => {
+                svg.append("rect")
+                    .attr("x", x(daysOfWeek[dayIndex]))
+                    .attr("y", y(hoursOfDay[hourIndex]))
+                    .attr("width", x.bandwidth())
+                    .attr("height", y.bandwidth())
+                    .style("fill", colorScale(value));
+            });
+        });
+    });
+}
+
+/**
+ * Aplica os filtros para o heatmap.
+ */
+function applyHeatmapFilters() {
+    const roomType = document.getElementById('filter-room-type').value;
+    const roomCapacity = document.getElementById('filter-room-capacity').value;
+    const startDate = document.getElementById('filter-date-start-heatmap').value;
+    const endDate = document.getElementById('filter-date-end-heatmap').value;
+
+    const filters = {
+        roomType,
+        roomCapacity: parseInt(roomCapacity),
+        startDate,
+        endDate
+    };
+
+    const processedData = processRoomData(horario, salas, filters);
+    drawHeatmap(processedData);
+}
 </code></pre>
         </article>
     </section>
@@ -314,13 +770,13 @@ module.exports = {handleFileSelect, setFilterMode , handleClassroomFile};
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-csvHandler.html">csvHandler</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addWeeksToData">addWeeksToData</a></li><li><a href="global.html#convertToDate">convertToDate</a></li><li><a href="global.html#getSemesterWeekNumber">getSemesterWeekNumber</a></li><li><a href="global.html#getWeekNumber">getWeekNumber</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addAlternativeRow">addAlternativeRow</a></li><li><a href="global.html#addAlternativeRowSub">addAlternativeRowSub</a></li><li><a href="global.html#addWeeksToData">addWeeksToData</a></li><li><a href="global.html#applyCustomFilters">applyCustomFilters</a></li><li><a href="global.html#applyGraphFilters">applyGraphFilters</a></li><li><a href="global.html#applyHeatmapFilters">applyHeatmapFilters</a></li><li><a href="global.html#convertToDate">convertToDate</a></li><li><a href="global.html#downloadData">downloadData</a></li><li><a href="global.html#drawConflictGraph">drawConflictGraph</a></li><li><a href="global.html#drawHeatmap">drawHeatmap</a></li><li><a href="global.html#exportToCSV">exportToCSV</a></li><li><a href="global.html#exportToJSON">exportToJSON</a></li><li><a href="global.html#findConflicts">findConflicts</a></li><li><a href="global.html#findOpenSlots">findOpenSlots</a></li><li><a href="global.html#findSubstitutionSlots">findSubstitutionSlots</a></li><li><a href="global.html#findUCAllocationSlots">findUCAllocationSlots</a></li><li><a href="global.html#getDisponibilidadeSala">getDisponibilidadeSala</a></li><li><a href="global.html#getSemesterWeekNumber">getSemesterWeekNumber</a></li><li><a href="global.html#getWeekNumber">getWeekNumber</a></li><li><a href="global.html#handleClassroomFile">handleClassroomFile</a></li><li><a href="global.html#handleFileSelect">handleFileSelect</a></li><li><a href="global.html#initializeSubstitutionTable">initializeSubstitutionTable</a></li><li><a href="global.html#initializeTable">initializeTable</a></li><li><a href="global.html#initializeTable2">initializeTable2</a></li><li><a href="global.html#initializeUCTable">initializeUCTable</a></li><li><a href="global.html#isConflicting">isConflicting</a></li><li><a href="global.html#listSalas">listSalas</a></li><li><a href="global.html#processRoomData">processRoomData</a></li><li><a href="global.html#removeSelectedRows">removeSelectedRows</a></li><li><a href="global.html#removeSelectedRowsSub">removeSelectedRowsSub</a></li><li><a href="global.html#setFilterMode">setFilterMode</a></li><li><a href="global.html#showModal">showModal</a></li><li><a href="global.html#showSubstitutionTable">showSubstitutionTable</a></li><li><a href="global.html#showUCAllocationTable">showUCAllocationTable</a></li><li><a href="global.html#showUCModal">showUCModal</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Apr 25 2024 16:15:46 GMT+0100 (Western European Summer Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Tue May 14 2024 07:53:14 GMT+0100 (Western European Summer Time)
 </footer>
 
 <script> prettyPrint(); </script>

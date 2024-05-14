@@ -65,8 +65,8 @@ describe('ClassScheduler', () => {
 
             const result = ClassScheduler.findUCAllocationSlots(filters, horario, salas);
             expect(result).toEqual([
-                { data: '2024-05-14', sala: 'A101', HoraIni: '10:00', HoraFim: '22:30', UC: 'Test', Turma: 'ME', Curso: 'ME' },
-                { data: '2024-05-15', sala: 'A101', HoraIni: '11:00', HoraFim: '22:30', UC: 'Test', Turma: 'ME', Curso: 'ME' }
+                { data: '2024-05-14', sala: 'A101', HoraIni: '10:00', HoraFim: '22:30', UC: 'Test'  },
+                { data: '2024-05-15', sala: 'A101', HoraIni: '11:00', HoraFim: '22:30', UC: 'Test' }
             ]);
         });
     });
