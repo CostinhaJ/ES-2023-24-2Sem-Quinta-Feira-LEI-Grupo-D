@@ -4,6 +4,10 @@ Projeto da cadeira de Engenharia de Software. Iremos implementar uma nova versã
 
 # Comandos
 
+## Iniciar projeto com script
+
+npm run-script run
+
 ## Iniciar projeto
 
 node server.js

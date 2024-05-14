@@ -1,5 +1,5 @@
-export default class DateConverter{
-        /**
+export default class DateConverter {
+    /**
      * Converts a date string to a Date object.
      * @param {string} str - Date string in the format 'dd/mm/yyyy'.
      * @returns {Date | null} Date object if valid, null otherwise.
@@ -7,11 +7,11 @@ export default class DateConverter{
     static convertToDate(str) {
         if (!str) {
             console.log("Data inválida fornecida para convertToDate:", str);
-            return null; // or a default date if preferred
+            return null;
         }
         const parts = str.split('/');
         const day = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1; // -1 because months in JavaScript start from 0
+        const month = parseInt(parts[1], 10) - 1;
         const year = parseInt(parts[2], 10);
         return new Date(year, month, day);
     }
@@ -25,13 +25,13 @@ export default class DateConverter{
         return data.map(row => {
             if (!row['Data da aula']) {
                 console.log("Data da aula ausente para a linha:", row);
-                return row; // Or add some default handling for missing dates
+                return row;
             }
 
             const date = DateConverter.convertToDate(row['Data da aula']);
             if (isNaN(date.getTime())) {
                 console.log("Data da aula inválida para a linha:", row);
-                return row; // Or add some default handling for invalid dates
+                return row;
             }
 
             const weekOfYear = DateConverter.getWeekNumber(date);
@@ -61,19 +61,11 @@ export default class DateConverter{
      */
     static getSemesterWeekNumber(weekOfYear) {
         if (weekOfYear >= 5 && weekOfYear <= 19) {
-            // First Semester
-            return weekOfYear - 4; // Adjustment to start semester week from 1
+            return weekOfYear - 4;
         } else if (weekOfYear >= 35 && weekOfYear <= 49) {
-            // Second Semester
-            return weekOfYear - 34; // Adjustment to start semester week from 1
+            return weekOfYear - 34;
         } else {
-            // Out of Semester
             return 'Fora do semestre';
         }
     }
-   
 }
-
-
-
-//module.exports= { addWeeksToData, convertToDate,getWeekNumber, getSemesterWeekNumber};
