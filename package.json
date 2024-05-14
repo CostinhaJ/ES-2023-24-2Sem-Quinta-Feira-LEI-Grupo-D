@@ -36,8 +36,10 @@
     },
     "collectCoverage": true,
     "collectCoverageFrom": [
-      "src/script.js",
-      "src/DateConverter.js"
+
+      "src/DateConverter.js",
+      "src/ClassScheduler.js"
+      
     ],
     "coverageThreshold": {
       "global": {
@@ -47,5 +49,6 @@
         "statements": 50
       }
     }
+    
   }
 }

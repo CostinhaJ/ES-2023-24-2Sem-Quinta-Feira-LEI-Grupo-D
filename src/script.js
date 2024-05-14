@@ -1,8 +1,8 @@
 import * as Papa from 'papaparse';
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import DateConverter from './DateConverter.js';
-import ClassScheduler from './ClassScheduler.js';
-import * as d3 from 'd3';
+import ClassScheduler from './ClassScheduler.js'; 
+import d3 from 'd3';
 
 let filterMode = "AND"; // Modo de filtro padrão
 let myTable; // Global variable to store the table instance

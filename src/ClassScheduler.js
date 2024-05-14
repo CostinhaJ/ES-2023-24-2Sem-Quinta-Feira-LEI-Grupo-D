@@ -1,4 +1,4 @@
-const DateConverter = require('./DateConverter.js');
+import DateConverter from "./DateConverter";
 
 export default class ClassScheduler {
     static findSubstitutionSlots(filters, horario, salas) {
@@ -85,7 +85,7 @@ export default class ClassScheduler {
         return res;
     }
 
-    static getDisponibilidadeSala(horario, nome, dia) {
+    static getDisponibilidadeSala(horario, nome) {
         let daysOcupados = horario.filter((aula => {
             return aula['Sala atribuída à aula'].trim() === nome.trim();
         })).sort((a, b) => {
@@ -145,3 +145,4 @@ export default class ClassScheduler {
         return (start1 < end2 && start2 < end1);
     }
 }
+
