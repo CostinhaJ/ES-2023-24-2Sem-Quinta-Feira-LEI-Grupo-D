@@ -3,6 +3,18 @@
 Projeto da cadeira de Engenharia de Software. Iremos implementar uma nova versão de funcionalidade de gestão de salas em Web.
 
 =============================================================================================
+
+# Autores
+Grupo: Quinta-Feira-LEI-Grupo-D
+
+Manuel Cunha | 104999 | mrffc-iscteiul
+Edgar Costa | 69172 | emncosta
+Rafael Pardal | 104741 | RafaelPardal
+Leonardo Costa | 104949 | BOT1LEO
+Tiago Varandas Martins  | 105056 | iscte-TiagoVarandas
+João Costa | 105530 | CostinhaJ
+
+=============================================================================================
 # Sobre o Projeto
 O projeto visa desenvolver uma aplicação para suporte à gestão de horários no Iscte. A aplicação permitirá carregar horários e salas a partir de arquivos CSV, mostrar e navegar nos horários e no cadastro de salas, além de oferecer funcionalidades avançadas, como sugestão de alocação de aulas e visualização gráfica das relações de conflitualidade e ocupação das salas
 
@@ -60,15 +72,13 @@ Permite gravar o horário alterado pelo usuário em CSV e JSON.
 Sugerir slots para alocação de aulas de substituição ou de uma UC, considerando diferentes critérios definidos pelo usuário.
 O usuário pode escolher, eliminar ou adicionar manualmente sugestões na tabela.
 
-=============================================================================================
-# Autores
+# Funcionalidades Imcompletas
 
-Manuel Cunha 104999
-Edgar Costa 69172
-Rafael Pardal 104741
-Leonardo Costa 104949
-Tiago Varandas Martins 105056 
-João Costa 105530
+Status das Visualizações Gráficas
+Embora as funcionalidades principais para identificar conflitos e processar dados de ocupação de salas estejam implementadas, os componentes gráficos estão pendentes de finalização.
+
+
+
 
 
 

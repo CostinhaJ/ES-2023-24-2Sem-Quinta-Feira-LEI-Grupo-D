@@ -9,7 +9,7 @@
     
     "plugins": ["complexity"],
     "rules": {
-      "complexity": ["error", 1] // Defenir complexidade
+      "complexity": ["error", 2] // Defenir complexidade
     }
   }
   
