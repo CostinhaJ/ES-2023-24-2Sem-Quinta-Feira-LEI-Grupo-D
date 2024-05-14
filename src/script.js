@@ -1,6 +1,7 @@
 import * as Papa from 'papaparse';
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import DateConverter from './DateConverter.js';
+import * as d3 from 'd3';
 
 let filterMode = "AND"; // Modo de filtro padrão
 let myTable; // Global variable to store the table instance
@@ -59,6 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('apply-filters').addEventListener('click', applyCustomFilters);
     document.getElementById('export-json').addEventListener('click', exportToJSON);
     document.getElementById('export-csv').addEventListener('click', exportToCSV);
+
+    document.getElementById('apply-graph-filters').addEventListener('click', applyGraphFilters);
 
     // Configurar o modal
     const modal = document.getElementById('substitution-modal');
@@ -553,4 +556,114 @@ function addAlternativeRowSub() {
         HoraFim: prompt("Hora de Fim:")
     };
     substitutionTable.addRow(newRow);
+}
+
+function applyGraphFilters() {
+    const courseFilter = document.getElementById('filter-course').value;
+    const ucFilter = document.getElementById('filter-uc').value;
+    const dateStartFilter = document.getElementById('filter-date-start').value;
+    const dateEndFilter = document.getElementById('filter-date-end').value;
+
+    const filteredData = horario.filter(aula => {
+        const courseMatch = courseFilter ? aula['Curso'].includes(courseFilter) : true;
+        const ucMatch = ucFilter ? aula['Unidade Curricular'].includes(ucFilter) : true;
+        const date = DateConverter.convertToDate(aula['Data da aula']);
+        const dateMatch = (!dateStartFilter || date >= new Date(dateStartFilter)) && (!dateEndFilter || date <= new Date(dateEndFilter));
+        return courseMatch && ucMatch && dateMatch;
+    });
+
+    const conflicts = findConflicts(filteredData);
+    drawConflictGraph(conflicts);
+}
+
+function findConflicts(data) {
+    const conflicts = [];
+    for (let i = 0; i < data.length; i++) {
+        for (let j = i + 1; j < data.length; j++) {
+            if (isConflicting(data[i], data[j])) {
+                conflicts.push({ source: data[i], target: data[j] });
+            }
+        }
+    }
+    return conflicts;
+}
+
+function isConflicting(aula1, aula2) {
+    const date1 = DateConverter.convertToDate(aula1['Data da aula']);
+    const date2 = DateConverter.convertToDate(aula2['Data da aula']);
+    if (date1.getTime() !== date2.getTime()) {
+        return false;
+    }
+
+    const start1 = aula1['Hora início da aula'];
+    const end1 = aula1['Hora fim da aula'];
+    const start2 = aula2['Hora início da aula'];
+    const end2 = aula2['Hora fim da aula'];
+
+    return (start1 < end2 && start2 < end1);
+}
+
+function drawConflictGraph(conflicts) {
+    const nodes = [];
+    const links = [];
+
+    conflicts.forEach(conflict => {
+        const source = conflict.source['Unidade Curricular'] + " " + conflict.source['Data da aula'] + " " + conflict.source['Hora início da aula'];
+        const target = conflict.target['Unidade Curricular'] + " " + conflict.target['Data da aula'] + " " + conflict.target['Hora início da aula'];
+
+        if (!nodes.find(node => node.id === source)) {
+            nodes.push({ id: source });
+        }
+        if (!nodes.find(node => node.id === target)) {
+            nodes.push({ id: target });
+        }
+
+        links.push({ source, target });
+    });
+
+    const width = 800;
+    const height = 600;
+
+    const svg = d3.select("#conflict-graph").html("").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    const simulation = d3.forceSimulation(nodes)
+        .force("link", d3.forceLink(links).id(d => d.id).distance(200))
+        .force("charge", d3.forceManyBody().strength(-500))
+        .force("center", d3.forceCenter(width / 2, height / 2));
+
+    const link = svg.append("g")
+        .selectAll("line")
+        .data(links)
+        .enter().append("line")
+        .attr("stroke-width", 2)
+        .attr("stroke", "#999");
+
+    const node = svg.append("g")
+        .selectAll("circle")
+        .data(nodes)
+        .enter().append("circle")
+        .attr("r", 5)
+        .attr("fill", "#69b3a2");
+
+    const label = svg.append("g")
+        .selectAll("text")
+        .data(nodes)
+        .enter().append("text")
+        .attr("dy", -3)
+        .text(d => d.id);
+
+    simulation.on("tick", () => {
+        link.attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+
+        node.attr("cx", d => d.x)
+            .attr("cy", d => d.y);
+
+        label.attr("x", d => d.x)
+            .attr("y", d => d.y);
+    });
 }

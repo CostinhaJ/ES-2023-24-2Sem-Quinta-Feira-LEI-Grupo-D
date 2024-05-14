@@ -5,6 +5,7 @@
     <title>Visualização de Horários</title>
     <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
 
@@ -85,6 +86,21 @@
         </form>
     </div>
 </div>
+
+<div class="filter-controls">
+    <label for="filter-course">Curso:</label>
+    <input type="text" id="filter-course">
+    <label for="filter-uc">Unidade Curricular:</label>
+    <input type="text" id="filter-uc">
+    <label for="filter-date-start">Data de Início:</label>
+    <input type="date" id="filter-date-start">
+    <label for="filter-date-end">Data de Fim:</label>
+    <input type="date" id="filter-date-end">
+    <button id="apply-graph-filters" class="filter-btn">Aplicar Filtros</button>
+</div>
+
+<div id="conflict-graph"></div>
+
 
 <script src="dist/bundle.js"></script>
 </body>
