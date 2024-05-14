@@ -25,17 +25,23 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('example-table').style.display = 'block';
         document.getElementById('example-table2').style.display = 'none';
         document.getElementById('substitution-table').style.display = 'none';
+        document.getElementById('uc-allocation-table').style.display = 'none';
     });
 
     document.getElementById('salas-btn').addEventListener('click', function() {
         document.getElementById('example-table').style.display = 'none';
         document.getElementById('example-table2').style.display = 'block';
         document.getElementById('substitution-table').style.display = 'none';
+        document.getElementById('uc-allocation-table').style.display = 'none';
     });
 
     document.getElementById('sub-btn').addEventListener('click', function() {
         // Exibir modal para requisitos de substituição
         showModal();
+    });
+
+    document.getElementById('uc-allocation-btn').addEventListener('click', function() {
+        showUCModal();
     });
 
     document.getElementById('custom-room-upload').addEventListener('click', function() {
@@ -66,15 +72,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Capturar dados do formulário do modal
+    // Configurar o modal de alocação de UC
+    const ucModal = document.getElementById('uc-allocation-modal');
+    const spanUC = document.getElementsByClassName('close-uc')[0];
+
+    spanUC.onclick = function() {
+        ucModal.style.display = 'none';
+    };
+
+    window.onclick = function(event) {
+        if (event.target == ucModal) {
+            ucModal.style.display = 'none';
+        }
+    };
+
+    // Capturar dados do formulário do modal de substituição
     document.getElementById('substitution-form').addEventListener('submit', function(event) {
         event.preventDefault();
         const startDate = document.getElementById('start-date').value;
         const endDate = document.getElementById('end-date').value;
-        const excludePeriods = document.getElementById('exclude-periods').value;
-        const includePeriods = document.getElementById('include-periods').value;
-        const preferredRooms = document.getElementById('preferred-rooms').value;
-        const excludedRooms = document.getElementById('excluded-rooms').value;
+        const excludePeriods = document.getElementById('exclude-periods').value.split(',');
+        const includePeriods = document.getElementById('include-periods').value.split(',');
+        const preferredRooms = document.getElementById('preferred-rooms').value.split(',');
+        const excludedRooms = document.getElementById('excluded-rooms').value.split(',');
 
         const filters = {
             DataIni: new Date(startDate),
@@ -88,10 +108,42 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.style.display = 'none';
         showSubstitutionTable(filters);
     });
+
+    // Capturar dados do formulário do modal de alocação de UC
+    document.getElementById('uc-allocation-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const ucName = document.getElementById('uc-name').value;
+        const numberOfClasses = document.getElementById('number-of-classes').value;
+        const startDateUC = document.getElementById('start-date-uc').value;
+        const endDateUC = document.getElementById('end-date-uc').value;
+        const excludePeriodsUC = document.getElementById('exclude-periods-uc').value.split(',');
+        const includePeriodsUC = document.getElementById('include-periods-uc').value.split(',');
+        const preferredRoomsUC = document.getElementById('preferred-rooms-uc').value.split(',');
+        const excludedRoomsUC = document.getElementById('excluded-rooms-uc').value.split(',');
+
+        const filters = {
+            UCName: ucName,
+            NumberOfClasses: parseInt(numberOfClasses),
+            DataIni: new Date(startDateUC),
+            DataFim: new Date(endDateUC),
+            ExcludePeriods: excludePeriodsUC,
+            IncludePeriods: includePeriodsUC,
+            PreferredRooms: preferredRoomsUC,
+            ExcludedRooms: excludedRoomsUC
+        };
+
+        ucModal.style.display = 'none';
+        showUCAllocationTable(filters);
+    });
 });
 
 function showModal() {
     const modal = document.getElementById('substitution-modal');
+    modal.style.display = 'block';
+}
+
+function showUCModal() {
+    const modal = document.getElementById('uc-allocation-modal');
     modal.style.display = 'block';
 }
 
@@ -260,6 +312,7 @@ function showSubstitutionTable(filters) {
     // Esconder outras tabelas
     document.getElementById('example-table').style.display = 'none';
     document.getElementById('example-table2').style.display = 'none';
+    document.getElementById('uc-allocation-table').style.display = 'none';
 
     // Mostrar a tabela de substituição (crie se necessário)
     let subTable = document.getElementById('substitution-table');
@@ -291,6 +344,47 @@ function initializeSubstitutionTable(data) {
     });
 }
 
+// Função para exibir a tabela de alocação de UC
+function showUCAllocationTable(filters) {
+    console.log("Filters for UC Allocation:", filters); // Adicione esta linha para depurar os filtros
+    // Esconder outras tabelas
+    document.getElementById('example-table').style.display = 'none';
+    document.getElementById('example-table2').style.display = 'none';
+    document.getElementById('substitution-table').style.display = 'none';
+
+    // Mostrar a tabela de alocação de UC (crie se necessário)
+    let ucTable = document.getElementById('uc-allocation-table');
+    if (!ucTable) {
+        ucTable = document.createElement('div');
+        ucTable.id = 'uc-allocation-table';
+        document.body.appendChild(ucTable);
+    }
+    
+    // Buscar slots de alocação de UC
+    const ucAllocationSlots = findUCAllocationSlots(filters);
+    console.log("UC Allocation Slots:", ucAllocationSlots); // Adicione esta linha para depurar os slots
+    initializeUCTable(ucAllocationSlots);
+}
+
+// Função para inicializar a tabela de alocação de UC
+function initializeUCTable(data) {
+    substitutionTable = new Tabulator("#uc-allocation-table", {
+        data: data,
+        columns: [
+            { title: "Data", field: "data", headerFilter: "input" },
+            { title: "Sala", field: "sala", headerFilter: "input" },
+            { title: "HoraIni", field: "HoraIni", headerFilter: "input" },
+            { title: "HoraFim", field: "HoraFim", headerFilter: "input" },
+            { title: "UC", field: "UC", headerFilter: "input" },
+            { title: "Turma", field: "Turma", headerFilter: "input" },
+            { title: "Curso", field: "Curso", headerFilter: "input" },
+        ],
+        layout: "fitColumns",
+        pagination: "local",
+        paginationSize: 15,
+    });
+}
+
 // Exemplo de função para encontrar slots de substituição (adaptar conforme necessário)
 function findSubstitutionSlots(filters) {
     if (!horario || !salas) {
@@ -300,6 +394,30 @@ function findSubstitutionSlots(filters) {
 
     // Adapte esta função conforme necessário para utilizar os filtros fornecidos
     return findOpenSlots(salas, horario, filters);
+}
+
+function findUCAllocationSlots(filters) {
+    if (!horario || !salas) {
+        alert("Por favor, carregue os ficheiros de horários e salas primeiro.");
+        return [];
+    }
+
+    const slots = findOpenSlots(salas, horario, filters);
+    const allocatedSlots = [];
+
+    for (let i = 0; i < filters.NumberOfClasses; i++) {
+        if (slots.length > 0) {
+            const slot = slots.shift();
+            allocatedSlots.push({
+                ...slot,
+                UC: filters.UCName,
+            });
+        } else {
+            break;
+        }
+    }
+
+    return allocatedSlots;
 }
 
 function findOpenSlots(classroom, horario, filters) {

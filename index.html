@@ -23,6 +23,7 @@
     <button id="menu-btn" class="filter-btn">Horário</button>
     <button id="salas-btn" class="filter-btn">Salas</button>
     <button id="sub-btn" class="filter-btn">Substituição</button>
+    <button id="uc-allocation-btn" class="filter-btn">Alocação de UC</button>
 </div>
 
 <div id="example-table"></div>
@@ -51,6 +52,34 @@
         </form>
     </div>
 </div>
+
+<!-- Modal for UC Allocation Requirements -->
+<div id="uc-allocation-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-uc">&times;</span>
+        <h2>Requisitos para Alocação de UC</h2>
+        <form id="uc-allocation-form">
+            <label for="uc-name">Nome da UC:</label>
+            <input type="text" id="uc-name" name="uc-name" required><br>
+            <label for="number-of-classes">Número de Aulas:</label>
+            <input type="number" id="number-of-classes" name="number-of-classes" required><br>
+            <label for="start-date-uc">Data de Início:</label>
+            <input type="date" id="start-date-uc" name="start-date-uc" required><br>
+            <label for="end-date-uc">Data de Fim:</label>
+            <input type="date" id="end-date-uc" name="end-date-uc" required><br>
+            <label for="exclude-periods-uc">Períodos a Excluir (HH:MM-HH:MM, separados por vírgula):</label>
+            <input type="text" id="exclude-periods-uc" name="exclude-periods-uc" placeholder="e.g., 08:00-12:00, 14:00-18:00"><br>
+            <label for="include-periods-uc">Períodos a Incluir (HH:MM-HH:MM, separados por vírgula):</label>
+            <input type="text" id="include-periods-uc" name="include-periods-uc" placeholder="e.g., 12:00-14:00"><br>
+            <label for="preferred-rooms-uc">Salas Preferidas:</label>
+            <input type="text" id="preferred-rooms-uc" name="preferred-rooms-uc" placeholder="e.g., Sala 101, Sala 102"><br>
+            <label for="excluded-rooms-uc">Salas Excluídas:</label>
+            <input type="text" id="excluded-rooms-uc" name="excluded-rooms-uc" placeholder="e.g., Sala 201, Sala 202"><br>
+            <button type="submit" class="filter-btn">Aplicar</button>
+        </form>
+    </div>
+</div>
+
 
 <script src="dist/bundle.js"></script>
 </body>
