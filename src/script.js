@@ -7,6 +7,7 @@ let myTable; // Global variable to store the table instance
 let horario;
 let salas;
 let substitutionTable;
+let ucAllocationTable;
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('custom-file-upload').addEventListener('click', function() {
@@ -26,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('example-table2').style.display = 'none';
         document.getElementById('substitution-table').style.display = 'none';
         document.getElementById('uc-allocation-table').style.display = 'none';
+        document.querySelector('.uc-controls').style.display = 'none';
     });
 
     document.getElementById('salas-btn').addEventListener('click', function() {
@@ -33,10 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('example-table2').style.display = 'block';
         document.getElementById('substitution-table').style.display = 'none';
         document.getElementById('uc-allocation-table').style.display = 'none';
+        document.querySelector('.uc-controls').style.display = 'none';
     });
 
     document.getElementById('sub-btn').addEventListener('click', function() {
-        // Exibir modal para requisitos de substituição
         showModal();
     });
 
@@ -108,6 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.style.display = 'none';
         showSubstitutionTable(filters);
     });
+    
 
     // Capturar dados do formulário do modal de alocação de UC
     document.getElementById('uc-allocation-form').addEventListener('submit', function(event) {
@@ -135,6 +138,14 @@ document.addEventListener('DOMContentLoaded', () => {
         ucModal.style.display = 'none';
         showUCAllocationTable(filters);
     });
+
+    // Botões para remover sugestões e adicionar alternativas
+    document.getElementById('remove-suggestions').addEventListener('click', removeSelectedRows);
+    document.getElementById('add-alternative').addEventListener('click', addAlternativeRow);
+
+    // Botões para remover sugestões e adicionar alternativas
+    document.getElementById('remove-suggestions').addEventListener('click', removeSelectedRowsSub);
+    document.getElementById('add-alternative').addEventListener('click', addAlternativeRowSub);
 });
 
 function showModal() {
@@ -313,6 +324,7 @@ function showSubstitutionTable(filters) {
     document.getElementById('example-table').style.display = 'none';
     document.getElementById('example-table2').style.display = 'none';
     document.getElementById('uc-allocation-table').style.display = 'none';
+    document.querySelector('.uc-controls').style.display = 'none';
 
     // Mostrar a tabela de substituição (crie se necessário)
     let subTable = document.getElementById('substitution-table');
@@ -326,6 +338,7 @@ function showSubstitutionTable(filters) {
     const substitutionSlots = findSubstitutionSlots(filters);
     console.log("Substitution Slots:", substitutionSlots); // Adicione esta linha para depurar os slots
     initializeSubstitutionTable(substitutionSlots);
+    document.querySelector('.uc-controls').style.display = 'block';
 }
 
 // Função para inicializar a tabela de substituição
@@ -337,11 +350,23 @@ function initializeSubstitutionTable(data) {
             { title: "Sala", field: "sala", headerFilter: "input" },
             { title: "HoraIni", field: "HoraIni", headerFilter: "input" },
             { title: "HoraFim", field: "HoraFim", headerFilter: "input" },
+            { title: "Selecionar", formatter: "rowSelection", titleFormatter: "rowSelection", align: "center", headerSort: false },
         ],
         layout: "fitColumns",
         pagination: "local",
         paginationSize: 15,
     });
+}
+
+// Exemplo de função para encontrar slots de substituição (adaptar conforme necessário)
+function findSubstitutionSlots(filters) {
+    if (!horario || !salas) {
+        alert("Por favor, carregue os ficheiros de horários e salas primeiro.");
+        return [];
+    }
+
+    // Adapte esta função conforme necessário para utilizar os filtros fornecidos
+    return findOpenSlots(salas, horario, filters);
 }
 
 // Função para exibir a tabela de alocação de UC
@@ -364,11 +389,12 @@ function showUCAllocationTable(filters) {
     const ucAllocationSlots = findUCAllocationSlots(filters);
     console.log("UC Allocation Slots:", ucAllocationSlots); // Adicione esta linha para depurar os slots
     initializeUCTable(ucAllocationSlots);
+    document.querySelector('.uc-controls').style.display = 'block';
 }
 
 // Função para inicializar a tabela de alocação de UC
 function initializeUCTable(data) {
-    substitutionTable = new Tabulator("#uc-allocation-table", {
+    ucAllocationTable = new Tabulator("#uc-allocation-table", {
         data: data,
         columns: [
             { title: "Data", field: "data", headerFilter: "input" },
@@ -378,6 +404,7 @@ function initializeUCTable(data) {
             { title: "UC", field: "UC", headerFilter: "input" },
             { title: "Turma", field: "Turma", headerFilter: "input" },
             { title: "Curso", field: "Curso", headerFilter: "input" },
+            { title: "Selecionar", formatter: "rowSelection", titleFormatter: "rowSelection", align: "center", headerSort: false },
         ],
         layout: "fitColumns",
         pagination: "local",
@@ -385,17 +412,7 @@ function initializeUCTable(data) {
     });
 }
 
-// Exemplo de função para encontrar slots de substituição (adaptar conforme necessário)
-function findSubstitutionSlots(filters) {
-    if (!horario || !salas) {
-        alert("Por favor, carregue os ficheiros de horários e salas primeiro.");
-        return [];
-    }
-
-    // Adapte esta função conforme necessário para utilizar os filtros fornecidos
-    return findOpenSlots(salas, horario, filters);
-}
-
+// Função para encontrar slots de alocação de UC
 function findUCAllocationSlots(filters) {
     if (!horario || !salas) {
         alert("Por favor, carregue os ficheiros de horários e salas primeiro.");
@@ -411,6 +428,8 @@ function findUCAllocationSlots(filters) {
             allocatedSlots.push({
                 ...slot,
                 UC: filters.UCName,
+                Turma: "ME",
+                Curso: "ME",
             });
         } else {
             break;
@@ -500,4 +519,38 @@ function getDisponibilidadeSala(horario, nome, dia) {
     }
 
     return timedays;
+}
+
+function removeSelectedRows() {
+    const selectedRows = ucAllocationTable.getSelectedRows();
+    selectedRows.forEach(row => row.delete());
+}
+
+function addAlternativeRow() {
+    const newRow = {
+        data: prompt("Data:"),
+        sala: prompt("Sala:"),
+        HoraIni: prompt("Hora de Início:"),
+        HoraFim: prompt("Hora de Fim:"),
+        UC: prompt("UC:"),
+        Turma: prompt("Turma:"),
+        Curso: prompt("Curso:")
+    };
+    ucAllocationTable.addRow(newRow);
+}
+
+// Funções para a tabela de substituição
+function removeSelectedRowsSub() {
+    const selectedRows = substitutionTable.getSelectedRows();
+    selectedRows.forEach(row => row.delete());
+}
+
+function addAlternativeRowSub() {
+    const newRow = {
+        data: prompt("Data:"),
+        sala: prompt("Sala:"),
+        HoraIni: prompt("Hora de Início:"),
+        HoraFim: prompt("Hora de Fim:")
+    };
+    substitutionTable.addRow(newRow);
 }

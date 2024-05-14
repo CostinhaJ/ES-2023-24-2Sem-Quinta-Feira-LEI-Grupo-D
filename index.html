@@ -29,6 +29,12 @@
 <div id="example-table"></div>
 <div id="example-table2"></div>
 <div id="substitution-table" style="display: none;"></div>
+<div id="uc-allocation-table" style="display: none;"></div>
+
+<div class="uc-controls" style="display: none;">
+    <button id="remove-suggestions" class="filter-btn">Remover Sugestões</button>
+    <button id="add-alternative" class="filter-btn">Adicionar Alternativa</button>
+</div>
 
 <!-- Modal for Substitution Requirements -->
 <div id="substitution-modal" class="modal">
@@ -67,10 +73,10 @@
             <input type="date" id="start-date-uc" name="start-date-uc" required><br>
             <label for="end-date-uc">Data de Fim:</label>
             <input type="date" id="end-date-uc" name="end-date-uc" required><br>
-            <label for="exclude-periods-uc">Períodos a Excluir (HH:MM-HH:MM, separados por vírgula):</label>
-            <input type="text" id="exclude-periods-uc" name="exclude-periods-uc" placeholder="e.g., 08:00-12:00, 14:00-18:00"><br>
-            <label for="include-periods-uc">Períodos a Incluir (HH:MM-HH:MM, separados por vírgula):</label>
-            <input type="text" id="include-periods-uc" name="include-periods-uc" placeholder="e.g., 12:00-14:00"><br>
+            <label for="exclude-periods-uc">Períodos a Excluir:</label>
+            <input type="text" id="exclude-periods-uc" name="exclude-periods-uc" placeholder="e.g., manhãs, tardes, noites"><br>
+            <label for="include-periods-uc">Períodos a Incluir:</label>
+            <input type="text" id="include-periods-uc" name="include-periods-uc" placeholder="e.g., segundas-feiras 10h-12h"><br>
             <label for="preferred-rooms-uc">Salas Preferidas:</label>
             <input type="text" id="preferred-rooms-uc" name="preferred-rooms-uc" placeholder="e.g., Sala 101, Sala 102"><br>
             <label for="excluded-rooms-uc">Salas Excluídas:</label>
@@ -79,7 +85,6 @@
         </form>
     </div>
 </div>
-
 
 <script src="dist/bundle.js"></script>
 </body>
