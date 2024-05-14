@@ -63,6 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('apply-graph-filters').addEventListener('click', applyGraphFilters);
 
+    document.getElementById('apply-heatmap-filters').addEventListener('click', applyHeatmapFilters);
+
     // Configurar o modal
     const modal = document.getElementById('substitution-modal');
     const span = document.getElementsByClassName('close')[0];
@@ -666,4 +668,117 @@ function drawConflictGraph(conflicts) {
         label.attr("x", d => d.x)
             .attr("y", d => d.y);
     });
+}
+
+function processRoomData(horario, salas, filters) {
+    const processedData = [];
+
+    const startDate = new Date(filters.startDate);
+    const endDate = new Date(filters.endDate);
+
+    // Iterar sobre cada sala
+    salas.forEach(sala => {
+        // Aplicar filtros de sala
+        const isRoomTypeMatch = filters.roomType ? sala['Nome sala'].includes(filters.roomType) : true;
+        const isRoomCapacityMatch = filters.roomCapacity ? parseInt(sala['Capacidade Normal']) >= filters.roomCapacity : true;
+
+        if (isRoomTypeMatch && isRoomCapacityMatch) {
+            // Inicializar mapa de ocupação
+            const roomOccupation = {};
+
+            // Iterar sobre cada dia dentro do intervalo
+            for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
+                const dayStr = date.toISOString().split('T')[0];
+                roomOccupation[dayStr] = Array(15).fill(0); // Inicializar slots horários (8h-22h30)
+
+                // Verificar ocupação da sala
+                horario.forEach(aula => {
+                    if (aula['Sala atribuída à aula'].trim() === sala['Nome sala'].trim()) {
+                        const aulaDate = DateConverter.convertToDate(aula['Data da aula']);
+                        if (aulaDate.getTime() === date.getTime()) {
+                            const startHour = parseInt(aula['Hora início da aula'].split(':')[0]) - 8;
+                            const endHour = parseInt(aula['Hora fim da aula'].split(':')[0]) - 8;
+                            for (let h = startHour; h <= endHour; h++) {
+                                roomOccupation[dayStr][h] = 1;
+                            }
+                        }
+                    }
+                });
+            }
+
+            processedData.push({
+                room: sala['Nome sala'],
+                occupation: roomOccupation
+            });
+        }
+    });
+
+    return processedData;
+}
+
+
+function drawHeatmap(data) {
+    const daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const hoursOfDay = Array.from({ length: 15 }, (v, i) => i + 8); // 8h-22h
+
+    const margin = { top: 50, right: 0, bottom: 100, left: 30 },
+        width = 900 - margin.left - margin.right,
+        height = 450 - margin.top - margin.bottom;
+
+    const svg = d3.select("#heatmap").html("").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleBand()
+        .range([0, width])
+        .domain(daysOfWeek)
+        .padding(0.01);
+
+    const y = d3.scaleBand()
+        .range([height, 0])
+        .domain(hoursOfDay)
+        .padding(0.01);
+
+    svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x));
+
+    svg.append("g")
+        .call(d3.axisLeft(y));
+
+    const colorScale = d3.scaleSequential(d3.interpolateBlues)
+        .domain([0, 1]);
+
+    data.forEach(roomData => {
+        Object.keys(roomData.occupation).forEach(day => {
+            const dayIndex = new Date(day).getDay();
+            roomData.occupation[day].forEach((value, hourIndex) => {
+                svg.append("rect")
+                    .attr("x", x(daysOfWeek[dayIndex]))
+                    .attr("y", y(hoursOfDay[hourIndex]))
+                    .attr("width", x.bandwidth())
+                    .attr("height", y.bandwidth())
+                    .style("fill", colorScale(value));
+            });
+        });
+    });
+}
+
+function applyHeatmapFilters() {
+    const roomType = document.getElementById('filter-room-type').value;
+    const roomCapacity = document.getElementById('filter-room-capacity').value;
+    const startDate = document.getElementById('filter-date-start-heatmap').value;
+    const endDate = document.getElementById('filter-date-end-heatmap').value;
+
+    const filters = {
+        roomType,
+        roomCapacity: parseInt(roomCapacity),
+        startDate,
+        endDate
+    };
+
+    const processedData = processRoomData(horario, salas, filters);
+    drawHeatmap(processedData);
 }
